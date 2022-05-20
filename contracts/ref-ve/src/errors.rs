@@ -6,6 +6,9 @@ pub const E003_NOT_INIT: &str = "E003: not initialized";
 
 pub const E100_ACC_NOT_REGISTERED: &str = "E100: account not registered";
 pub const E101_INSUFFICIENT_BALANCE: &str = "E101: insufficient balance";
+pub const E102_INSUFFICIENT_STORAGE: &str = "E102: insufficient storage";
+pub const E103_STILL_HAS_REWARD: &str = "E103: still has reward";
+pub const E104_STILL_HAS_LPT: &str = "E104: still has lpt";
 
 pub const E200_ALREADY_VOTED: &str = "E200: already voted";
 pub const E201_INVALID_VOTE: &str = "E201: invalid vote";
@@ -32,5 +35,3 @@ pub const E500_INVALID_MSG: &str = "E500: invalid msg";
 
 pub const E600_MFT_INVALID_LPTOKEN_ID: &str = "E600: MFT lptoken id is invalid";
 pub const E601_MFT_INVALID_LPTOKEN_CONTRACT: &str = "E601: MFT lptoken contract id is invalid";
-
-pub const E700_NOT_NEED_STORAGE: &str = "E700: not need storage";

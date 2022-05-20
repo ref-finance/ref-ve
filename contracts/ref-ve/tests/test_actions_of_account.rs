@@ -30,18 +30,18 @@ fn test_withdraw_lpt() {
     assert_err!(e.withdraw_lpt(&users.alice, Some(to_yocto("101"))), E101_INSUFFICIENT_BALANCE);
 
     // 5 : The account doesn't have enough balance
-    e.transfer(&users.alice, &users.bob, to_yocto("1"));
+    e.storage_deposit(&users.alice, &users.dude, to_yocto("0.00125")).assert_success();
+    e.transfer(&users.alice, &users.dude, to_yocto("1"));
     assert_err!(e.withdraw_lpt(&users.alice, Some(to_yocto("100"))), "The account doesn't have enough balance");
     assert_eq!(e.balance_of(&users.alice), to_yocto("199"));
-    assert_eq!(e.balance_of(&users.bob), to_yocto("201"));
+    assert_eq!(e.balance_of(&users.dude), to_yocto("1"));
 
     // success alice all
-    e.transfer(&users.bob, &users.alice, to_yocto("1"));
+    e.transfer(&users.dude, &users.alice, to_yocto("1"));
     let mut before = e.get_metadata();
     assert_eq!(e.mft_balance_of(&users.alice, &lpt_id()), to_yocto("100"));
     e.withdraw_lpt(&users.alice, None).assert_success();
     assert_eq!(e.mft_balance_of(&users.alice, &lpt_id()), to_yocto("200"));
-    before.account_count = 1.into();
     before.cur_total_ve_lpt = to_yocto("200").into();
     before.cur_lock_lpt = to_yocto("100").into();
     assert_eq!(format!("{:?}", before), format!("{:?}", e.get_metadata()));
@@ -49,7 +49,6 @@ fn test_withdraw_lpt() {
     // success bob half
     let mut before = e.get_metadata();
     e.withdraw_lpt(&users.bob, Some(to_yocto("50"))).assert_success();
-    before.account_count = 1.into();
     before.cur_total_ve_lpt = to_yocto("100").into();
     before.cur_lock_lpt = to_yocto("50").into();
     assert_eq!(format!("{:?}", before), format!("{:?}", e.get_metadata()));
@@ -57,7 +56,6 @@ fn test_withdraw_lpt() {
     // success bob all
     let mut before = e.get_metadata();
     e.withdraw_lpt(&users.bob, Some(to_yocto("50"))).assert_success();
-    before.account_count = 0.into();
     before.cur_total_ve_lpt = to_yocto("0").into();
     before.cur_lock_lpt = to_yocto("0").into();
     assert_eq!(format!("{:?}", before), format!("{:?}", e.get_metadata()));

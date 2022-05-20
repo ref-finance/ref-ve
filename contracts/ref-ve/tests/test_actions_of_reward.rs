@@ -58,6 +58,8 @@ fn test_withdraw_reward() {
     e.lock_lpt(&users.alice, to_yocto("100"), DEFAULT_MAX_LOCKING_DURATION_SEC).assert_success();
     assert_eq!(HashMap::from([(tokens.nref.account_id(), to_yocto("100"))]), e.get_account_info(&users.alice).unwrap().rewards);
 
+    assert_err!(e.storage_unregister(&users.alice, 1), E103_STILL_HAS_REWARD);
+
     assert_eq!(e.ft_balance_of(&tokens.nref, &users.alice), 0);
     e.withdraw_reward(&users.alice, &tokens.nref, Some(to_yocto("50")));
     assert_eq!(HashMap::from([(tokens.nref.account_id(), to_yocto("50"))]), e.get_account_info(&users.alice).unwrap().rewards);

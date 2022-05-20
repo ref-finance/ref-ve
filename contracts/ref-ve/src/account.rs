@@ -4,6 +4,7 @@ use crate::*;
 #[cfg_attr(not(target_arch = "wasm32"), derive(Debug, Deserialize))]
 #[serde(crate = "near_sdk::serde")]
 pub struct Account {
+    pub sponsor_id: AccountId,
     /// The amount of LPT locked
     #[serde(with = "u128_dec_format")]
     pub lpt_amount: Balance,
@@ -24,6 +25,7 @@ pub struct Account {
 impl Default for Account {
     fn default() -> Self {
         Account {
+            sponsor_id: env::current_account_id(),
             lpt_amount: 0,
             ve_lpt_amount: 0,
             unlock_timestamp: 0,
@@ -55,8 +57,9 @@ impl From<Account> for VAccount {
 }
 
 impl Account {
-    pub fn new() -> Self {
+    pub fn new(sponsor_id: &AccountId) -> Self {
         Account {
+            sponsor_id: sponsor_id.clone(),
             lpt_amount: 0,
             ve_lpt_amount: 0,
             unlock_timestamp: 0,
@@ -212,7 +215,6 @@ impl Contract {
     pub fn internal_remove_account(&mut self, account_id: &AccountId) {
         self.data_mut().accounts.remove(account_id);
         self.data_mut().account_count -= 1;
-        self.ft.accounts.remove(account_id);
     }
 }
 
