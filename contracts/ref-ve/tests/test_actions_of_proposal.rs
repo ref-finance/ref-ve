@@ -176,6 +176,120 @@ fn test_action_proposal(){
 }
 
 #[test]
+fn test_action_proposal_farming_reward_01(){
+    let e = init_env();
+    let users = Users::init(&e);
+
+    e.mft_mint(&lpt_inner_id(), &users.alice, to_yocto("200"));
+    e.mft_mint(&lpt_inner_id(), &users.bob, to_yocto("200"));
+
+    e.mft_storage_deposit(&lpt_id(), &e.ve_contract.user_account);
+
+    e.lock_lpt(&users.alice, to_yocto("100"), DEFAULT_MAX_LOCKING_DURATION_SEC).assert_success();
+    e.lock_lpt(&users.bob, to_yocto("100"), DEFAULT_MAX_LOCKING_DURATION_SEC).assert_success();
+    
+    e.create_proposal(&e.dao, ProposalKind::FarmingReward { farm_list: vec!["ref<>celo".to_string(), "usn<>usdt".to_string()], num_portions: 2 }, e.current_time() + DAY_TS, 1000, None, 0).assert_success();
+
+    e.skip_time(DAY_SEC);
+
+    e.action_proposal(&users.alice, 0, Action::VoteFarm { farm_id: 0 }, None).assert_success();
+    e.action_proposal(&users.bob, 0, Action::VoteFarm { farm_id: 1 }, None).assert_success();
+    
+    assert_eq!(vec![to_yocto("200"), to_yocto("200")], e.get_proposal(0).unwrap().votes);
+    assert_eq!(2, e.get_proposal(0).unwrap().participants);
+
+    e.skip_time(DAY_SEC + DEFAULT_MAX_LOCKING_DURATION_SEC);
+    assert_eq!(FarmingReward { price: 200000000000000000000000000, portion_list: vec![("ref<>celo".to_string(), 1), ("usn<>usdt".to_string(), 1)] }, e.get_proposal(0).unwrap().farming_reward.unwrap());
+}
+
+#[test]
+fn test_action_proposal_farming_reward_02(){
+    let e = init_env();
+    let users = Users::init(&e);
+
+    e.mft_mint(&lpt_inner_id(), &users.alice, to_yocto("200"));
+    e.mft_mint(&lpt_inner_id(), &users.bob, to_yocto("200"));
+
+    e.mft_storage_deposit(&lpt_id(), &e.ve_contract.user_account);
+
+    e.lock_lpt(&users.alice, to_yocto("200"), DEFAULT_MAX_LOCKING_DURATION_SEC).assert_success();
+    e.lock_lpt(&users.bob, to_yocto("100"), DEFAULT_MAX_LOCKING_DURATION_SEC).assert_success();
+    
+    e.create_proposal(&e.dao, ProposalKind::FarmingReward { farm_list: vec!["ref<>celo".to_string(), "usn<>usdt".to_string()], num_portions: 2 }, e.current_time() + DAY_TS, 1000, None, 0).assert_success();
+
+    e.skip_time(DAY_SEC);
+
+    e.action_proposal(&users.alice, 0, Action::VoteFarm { farm_id: 0 }, None).assert_success();
+    e.action_proposal(&users.bob, 0, Action::VoteFarm { farm_id: 1 }, None).assert_success();
+    
+    assert_eq!(vec![to_yocto("400"), to_yocto("200")], e.get_proposal(0).unwrap().votes);
+    assert_eq!(2, e.get_proposal(0).unwrap().participants);
+
+    e.skip_time(DAY_SEC + DEFAULT_MAX_LOCKING_DURATION_SEC);
+    assert_eq!(FarmingReward { price: 200000000000000000000000000, portion_list: vec![("ref<>celo".to_string(), 2)] }, e.get_proposal(0).unwrap().farming_reward.unwrap());
+}
+
+#[test]
+fn test_action_proposal_farming_reward_03(){
+    let e = init_env();
+    let users = Users::init(&e);
+
+    e.mft_mint(&lpt_inner_id(), &users.alice, to_yocto("200"));
+    e.mft_mint(&lpt_inner_id(), &users.bob, to_yocto("200"));
+    e.mft_mint(&lpt_inner_id(), &users.charlie, to_yocto("200"));
+
+    e.mft_storage_deposit(&lpt_id(), &e.ve_contract.user_account);
+
+    e.lock_lpt(&users.alice, to_yocto("200"), DEFAULT_MAX_LOCKING_DURATION_SEC).assert_success();
+    e.lock_lpt(&users.bob, to_yocto("100"), DEFAULT_MAX_LOCKING_DURATION_SEC).assert_success();
+    e.lock_lpt(&users.charlie, to_yocto("100"), DEFAULT_MAX_LOCKING_DURATION_SEC).assert_success();
+    
+    e.create_proposal(&e.dao, ProposalKind::FarmingReward { farm_list: vec!["ref<>celo".to_string(), "usn<>usdt".to_string(), "ref<>aurora".to_string()], num_portions: 3 }, e.current_time() + DAY_TS, 1000, None, 0).assert_success();
+
+    e.skip_time(DAY_SEC);
+
+    e.action_proposal(&users.alice, 0, Action::VoteFarm { farm_id: 0 }, None).assert_success();
+    e.action_proposal(&users.bob, 0, Action::VoteFarm { farm_id: 1 }, None).assert_success();
+    e.action_proposal(&users.charlie, 0, Action::VoteFarm { farm_id: 2 }, None).assert_success();
+    
+    assert_eq!(vec![to_yocto("400"), to_yocto("200"), to_yocto("200")], e.get_proposal(0).unwrap().votes);
+    assert_eq!(3, e.get_proposal(0).unwrap().participants);
+
+    e.skip_time(DAY_SEC + DEFAULT_MAX_LOCKING_DURATION_SEC);
+    assert_eq!(FarmingReward { price: 200000000000000000000000000, portion_list: vec![("ref<>celo".to_string(), 2), ("usn<>usdt".to_string(), 1)] }, e.get_proposal(0).unwrap().farming_reward.unwrap());
+}
+
+#[test]
+fn test_action_proposal_farming_reward_04(){
+    let e = init_env();
+    let users = Users::init(&e);
+
+    e.mft_mint(&lpt_inner_id(), &users.alice, to_yocto("200"));
+    e.mft_mint(&lpt_inner_id(), &users.bob, to_yocto("200"));
+    e.mft_mint(&lpt_inner_id(), &users.charlie, to_yocto("200"));
+
+    e.mft_storage_deposit(&lpt_id(), &e.ve_contract.user_account);
+
+    e.lock_lpt(&users.alice, to_yocto("200"), DEFAULT_MAX_LOCKING_DURATION_SEC).assert_success();
+    e.lock_lpt(&users.bob, to_yocto("50"), DEFAULT_MAX_LOCKING_DURATION_SEC).assert_success();
+    e.lock_lpt(&users.charlie, to_yocto("100"), DEFAULT_MAX_LOCKING_DURATION_SEC).assert_success();
+    
+    e.create_proposal(&e.dao, ProposalKind::FarmingReward { farm_list: vec!["ref<>celo".to_string(), "usn<>usdt".to_string(), "ref<>aurora".to_string()], num_portions: 3 }, e.current_time() + DAY_TS, 1000, None, 0).assert_success();
+
+    e.skip_time(DAY_SEC);
+
+    e.action_proposal(&users.alice, 0, Action::VoteFarm { farm_id: 0 }, None).assert_success();
+    e.action_proposal(&users.bob, 0, Action::VoteFarm { farm_id: 1 }, None).assert_success();
+    e.action_proposal(&users.charlie, 0, Action::VoteFarm { farm_id: 2 }, None).assert_success();
+    
+    assert_eq!(vec![to_yocto("400"), to_yocto("100"), to_yocto("200")], e.get_proposal(0).unwrap().votes);
+    assert_eq!(3, e.get_proposal(0).unwrap().participants);
+
+    e.skip_time(DAY_SEC + DEFAULT_MAX_LOCKING_DURATION_SEC);
+    assert_eq!(FarmingReward { price: 200000000000000000000000000, portion_list: vec![("ref<>celo".to_string(), 2), ("ref<>aurora".to_string(), 1)] }, e.get_proposal(0).unwrap().farming_reward.unwrap());
+}
+
+#[test]
 fn test_action_cancel(){
     let e = init_env();
     let users = Users::init(&e);

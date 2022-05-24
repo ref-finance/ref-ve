@@ -95,15 +95,17 @@ impl Proposal {
             ProposalKind::FarmingReward { farm_list, num_portions } => {
                 let total_votes: u128 = self.votes.iter().sum();
                 if total_votes >= *num_portions as u128 {
-                    let mut votes = self.votes.clone();
-                    votes.sort();
-                    votes.reverse();
+                    let mut farm_list_with_votes = farm_list.iter().zip(self.votes.clone()).map(|(farm_id, vote)| (farm_id.clone(), vote)).collect::<Vec<(String, u128)>>();
+                    farm_list_with_votes.sort_by(|item_a, item_b| item_b.1.cmp(&item_a.1));
+                    let votes = farm_list_with_votes.iter().map(|item| item.1).collect();
                     let price = find_portion_price(&votes, *num_portions, total_votes);
                     let mut portion_list = vec![];
-                    for (index, vote) in votes.iter().enumerate() {
-                        let portions = vote / price;
-                        if vote / price > 0 {
-                            portion_list.push((farm_list[index].clone(), portions as u32));
+                    let mut remain_portions = *num_portions as u128;
+                    for (farm_id, vote) in farm_list_with_votes.iter() {
+                        let portions = std::cmp::min(vote / price, remain_portions);
+                        if portions > 0 {
+                            remain_portions -= portions;
+                            portion_list.push((farm_id.clone(), portions as u32));
                         } else {
                             break;
                         }
