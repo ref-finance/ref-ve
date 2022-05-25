@@ -23,6 +23,10 @@ impl Contract {
 
         self.update_impacted_proposals(&mut account, prev_ve_lpt_amount, decreased_ve_lpt, false);
         
+        if account.lpt_amount == 0 {
+            account.proposals.clear();
+        }
+        
         self.internal_set_account(&account_id, account);
 
         self.transfer_lpt_token(&account_id, amount)
