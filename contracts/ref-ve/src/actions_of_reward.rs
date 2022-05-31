@@ -15,6 +15,26 @@ impl Contract {
         self.internal_set_account(&account_id, account);
     }
 
+    pub fn claim_reward(&mut self, proposal_id: u32) {
+        let account_id = env::predecessor_account_id();
+        let mut account = self.internal_unwrap_account(&account_id);
+        let mut proposal = self.internal_unwrap_proposal(proposal_id);
+        if proposal.status == Some(ProposalStatus::Expired) {
+            if let Some(vote_detail) = account.proposals.remove(&proposal_id) {
+                match proposal.kind {
+                    ProposalKind::Poll { .. } => {
+                        if let Some((token_id, reward_amount)) = proposal.claim_reward(vote_detail.amount) {
+                            account.add_rewards(&HashMap::from([(token_id, reward_amount)]));
+                        }
+                    },
+                    _ => {}
+                }
+                account.proposals_history.insert(&proposal_id, &vote_detail);
+                self.internal_set_account(&account_id, account);
+            }
+        }
+    }
+
     /// Withdraws given reward token of given user.
     /// when amount is None, withdraw all balance of the token.
     pub fn withdraw_reward(&mut self, token_id: AccountId, amount: Option<U128>) {
@@ -96,21 +116,22 @@ impl Contract {
 
     pub fn internal_claim_all(&mut self, account: &mut Account) {
         let mut rewards = HashMap::new();
-        let account_votes_amount = account.ve_lpt_amount;
-        account.proposals.retain(|proposal_id, _| {
+        let mut history = HashMap::new();
+        account.proposals.retain(|proposal_id, vote_detail| {
             let mut proposal = self.internal_unwrap_proposal(*proposal_id);
             if proposal.status == Some(ProposalStatus::Expired) {
-                self.internal_redeem_near(&mut proposal);
-                if let Some((token_id, reward_amount)) = proposal.claim_reward(account_votes_amount){
-                    rewards.insert(token_id.clone(), reward_amount + rewards.get(&token_id).unwrap_or(&0_u128));
+                if let Some((token_id, reward_amount)) = proposal.claim_reward(vote_detail.amount){
+                    rewards.insert(token_id.clone(), reward_amount);
                 }
-                self.data_mut().proposals.insert(&proposal_id, &proposal.into());
+                history.insert(*proposal_id, vote_detail.clone());
+                self.data_mut().proposals.insert(proposal_id, &proposal.into());
                 false
             } else {
                 true
             }
         });
         account.add_rewards(&rewards);
+        account.add_history(&history);
     }
 
 
@@ -123,7 +144,7 @@ impl Contract {
                 if let Some(incentive) = &proposal.incentive {
                     let votes_total_amount = proposal.get_votes_total_amount();
                     let (token_id, reward_amount) = incentive.calc_reward(proposal.participants, votes_total_amount, self.data().cur_total_ve_lpt);
-                    rewards.insert(token_id.clone(), reward_amount + rewards.get(&token_id).unwrap_or(&0_u128));
+                    rewards.insert(token_id.clone(), reward_amount);
                 }
             }
         }

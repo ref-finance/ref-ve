@@ -93,7 +93,6 @@ impl Contract {
         duration_sec: u32,
     ) {
         let mut account = self.internal_unwrap_or_default_account(account_id);
-        let prev_ve_lpt_amount = account.ve_lpt_amount;
         let config = self.internal_config();
         require!(duration_sec <= config.max_locking_duration_sec, E302_INVALID_DURATION);
 
@@ -103,7 +102,7 @@ impl Contract {
         self.data_mut().cur_lock_lpt += amount;
         self.data_mut().cur_total_ve_lpt += increased_ve_lpt;
 
-        self.update_impacted_proposals(&mut account, prev_ve_lpt_amount, increased_ve_lpt, true);
+        self.update_impacted_proposals(&mut account, increased_ve_lpt, true);
 
         self.internal_set_account(&account_id, account);
 

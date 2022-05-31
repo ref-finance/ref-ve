@@ -9,7 +9,6 @@ impl Contract {
 
         let account_id = env::predecessor_account_id();
         let mut account = self.internal_unwrap_account(&account_id);
-        let prev_ve_lpt_amount = account.ve_lpt_amount;
         let amount = if let Some(request) = amount {
             request.0
         } else {
@@ -21,11 +20,7 @@ impl Contract {
         self.data_mut().cur_lock_lpt -= amount;
         self.data_mut().cur_total_ve_lpt -= decreased_ve_lpt;
 
-        self.update_impacted_proposals(&mut account, prev_ve_lpt_amount, decreased_ve_lpt, false);
-        
-        if account.lpt_amount == 0 {
-            account.proposals.clear();
-        }
+        self.update_impacted_proposals(&mut account, decreased_ve_lpt, false);
         
         self.internal_set_account(&account_id, account);
 

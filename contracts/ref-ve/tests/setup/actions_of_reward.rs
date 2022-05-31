@@ -14,6 +14,21 @@ impl Env {
             )
     }
 
+    pub fn claim_reward(
+        &self,
+        operator: &UserAccount, 
+        proposal_id: u32
+    ) -> ExecutionResult {
+        operator
+            .function_call(
+                self.ve_contract.contract.claim_reward(
+                    proposal_id
+                ),
+                MAX_GAS.0,
+                0,
+            )
+    }
+
     pub fn withdraw_reward(
         &self,
         operator: &UserAccount, 

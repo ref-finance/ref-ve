@@ -55,8 +55,9 @@ use std::collections::HashMap;
 pub(crate) enum StorageKeys {
     Operator,
     Config,
-    Proposals,
     Accounts,
+    Proposals,
+    AccountProposalHistory { account_id: AccountId },
 }
 
 /// Contract config

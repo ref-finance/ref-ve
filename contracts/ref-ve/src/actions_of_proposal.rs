@@ -154,18 +154,18 @@ impl Contract {
         assert_one_yocto();
         let proposer = env::predecessor_account_id();
 
-        let (action, ve_lpt_amount) = self.internal_account_cancel_vote(&proposer, proposal_id);
+        let vote_detail = self.internal_account_cancel_vote(&proposer, proposal_id);
 
-        self.internal_cancel_vote(proposal_id, &action, ve_lpt_amount);
+        self.internal_cancel_vote(proposal_id, &vote_detail.action, vote_detail.amount);
 
         Event::ActionCancel {
             proposer_id: &proposer,
             proposal_id,
-            action: &format!("{:?}", action)
+            action: &format!("{:?}", vote_detail.action)
         }
         .emit();
 
-        ve_lpt_amount.into()
+        vote_detail.amount.into()
     }
 }
 

@@ -19,6 +19,26 @@ pub struct Metadata {
 
 #[derive(Serialize)]
 #[serde(crate = "near_sdk::serde")]
+#[cfg_attr(not(target_arch = "wasm32"), derive(Deserialize, Debug))]
+pub struct AccountInfo {
+    pub sponsor_id: AccountId,
+    /// The amount of LPT locked
+    #[serde(with = "u128_dec_format")]
+    pub lpt_amount: Balance,
+    /// The amount of veLPT the account holds
+    #[serde(with = "u128_dec_format")]
+    pub ve_lpt_amount: Balance,
+    /// When the locking token can be unlocked without slash in nanoseconds.
+    #[serde(with = "u64_dec_format")]
+    pub unlock_timestamp: u64,
+    /// The duration of current locking in seconds.
+    pub duration_sec: u32,
+    #[serde(with = "u128_map_format")]
+    pub rewards: HashMap<AccountId, Balance>,
+}
+
+#[derive(Serialize)]
+#[serde(crate = "near_sdk::serde")]
 #[cfg_attr(feature = "test", derive(Deserialize, Clone))]
 pub struct StorageReport {
     pub storage: U64,
@@ -95,7 +115,82 @@ impl Contract {
     pub fn get_account_info(
         &self,
         account_id: AccountId
-    ) -> Option<Account> {
-        self.internal_get_account(&account_id)
+    ) -> Option<AccountInfo> {
+        if let Some(account) = self.internal_get_account(&account_id) {
+            Some(AccountInfo {
+                sponsor_id: account.sponsor_id,
+                lpt_amount: account.lpt_amount,
+                ve_lpt_amount: account.ve_lpt_amount,
+                unlock_timestamp: account.unlock_timestamp,
+                duration_sec: account.duration_sec,
+                rewards: account.rewards.clone(),
+            })
+        } else {
+            None
+        }
+    }
+
+    pub fn get_vote_detail(
+        &self,
+        account_id: AccountId
+    ) -> HashMap<u32, VoteDetail> {
+        if let Some(account) = self.internal_get_account(&account_id) {
+            let mut result = HashMap::new();
+            for (proposal_id, vote_detail) in account.proposals {
+                let proposal = self.internal_unwrap_proposal(proposal_id);
+                if proposal.status != Some(ProposalStatus::Expired) {
+                    result.insert(proposal_id, vote_detail.clone());
+                }
+            }
+            result
+        } else {
+            HashMap::new()
+        }
+    }
+
+    pub fn get_vote_detail_history(
+        &self,
+        account_id: AccountId
+    ) -> HashMap<u32, VoteDetail> {
+        if let Some(account) = self.internal_get_account(&account_id) {
+            let mut result = HashMap::new();
+            for (proposal_id, vote_detail) in account.proposals {
+                let proposal = self.internal_unwrap_proposal(proposal_id);
+                if proposal.status == Some(ProposalStatus::Expired) {
+                    result.insert(proposal_id, vote_detail.clone());
+                }
+            }
+            for (k, v) in account.proposals_history.iter() {
+                result.insert(k, v);
+            }
+            result
+        } else {
+            HashMap::new()
+        }
+    }
+
+    pub fn get_unclaimed_proposal(
+        &self,
+        account_id: AccountId
+    ) -> HashMap<u32, VoteDetail> {
+        if let Some(account) = self.internal_get_account(&account_id) {
+            let mut result = HashMap::new();
+            for (proposal_id, vote_detail) in account.proposals {
+                let proposal = self.internal_unwrap_proposal(proposal_id);
+                if proposal.status == Some(ProposalStatus::Expired) {
+                    match proposal.kind {
+                        ProposalKind::Poll { .. } => {
+                            if proposal.incentive.is_some() {
+                                result.insert(proposal_id, vote_detail.clone());
+                            }
+                        },
+                        _ => {}
+                    }
+                }
+            }
+            result
+        } else {
+            HashMap::new()
+        }
     }
 }

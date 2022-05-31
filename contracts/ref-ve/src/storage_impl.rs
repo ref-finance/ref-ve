@@ -36,7 +36,7 @@ impl StorageManagement for Contract {
             }
         } else {     
             self.ft.internal_register_account(&account_id);       
-            self.internal_set_account(&account_id, Account::new(&sponsor_id).into());
+            self.internal_set_account(&account_id, Account::new(&account_id, &sponsor_id).into());
             self.data_mut().account_count += 1;
             let refund = amount - STORAGE_BALANCE_MIN_BOUND;
             if refund > 0 {

@@ -68,10 +68,16 @@ fn test_withdraw_lpt() {
     e.skip_time(DAY_SEC);
     e.action_proposal(&users.alice, 0, Action::VoteApprove, None).assert_success();
     assert_eq!(vec![to_yocto("200"), 0, 0, to_yocto("200")], e.get_proposal(0).unwrap().votes);
+    assert_eq!(HashMap::from([(0, VoteDetail {
+        action: Action::VoteApprove, amount: to_yocto("200")
+    })]), e.get_vote_detail(&users.alice));
     e.withdraw_lpt(&users.alice, Some(to_yocto("50"))).assert_success();
-    assert_eq!(HashMap::from([(0, Action::VoteApprove)]), e.get_account_info(&users.alice).unwrap().proposals);
+    assert_eq!(HashMap::from([(0, VoteDetail {
+        action: Action::VoteApprove, amount: to_yocto("100")
+    })]), e.get_vote_detail(&users.alice));
     assert_eq!(vec![to_yocto("100"), 0, 0, to_yocto("100")], e.get_proposal(0).unwrap().votes);
     e.withdraw_lpt(&users.alice, None).assert_success();
-    assert_eq!(HashMap::new(), e.get_account_info(&users.alice).unwrap().proposals);
     assert_eq!(vec![0, 0, 0, 0], e.get_proposal(0).unwrap().votes);
+    assert_eq!(HashMap::new(), e.get_vote_detail(&users.alice));
+    assert_eq!(HashMap::new(), e.get_vote_detail_history(&users.alice));
 }

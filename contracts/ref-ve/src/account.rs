@@ -1,7 +1,16 @@
 use crate::*;
 
+#[derive(BorshSerialize, BorshDeserialize, Serialize, Clone)]
+#[cfg_attr(not(target_arch = "wasm32"), derive(Debug, Deserialize, PartialEq))]
+#[serde(crate = "near_sdk::serde")]
+pub struct VoteDetail {
+    pub action: Action,
+    #[serde(with = "u128_dec_format")]
+    pub amount: u128,
+}
+
 #[derive(BorshSerialize, BorshDeserialize, Serialize)]
-#[cfg_attr(not(target_arch = "wasm32"), derive(Debug, Deserialize))]
+#[cfg_attr(not(target_arch = "wasm32"), derive(Debug))]
 #[serde(crate = "near_sdk::serde")]
 pub struct Account {
     pub sponsor_id: AccountId,
@@ -16,26 +25,15 @@ pub struct Account {
     pub unlock_timestamp: u64,
     /// The duration of current locking in seconds.
     pub duration_sec: u32,
-    /// Record voting action
-    pub proposals: HashMap<u32, Action>,
+    /// Record voting info
+    #[serde(skip_serializing)]
+    pub proposals: HashMap<u32, VoteDetail>,
+    /// Record expired proposal voting info
+    #[serde(skip_serializing)]
+    pub proposals_history: UnorderedMap<u32, VoteDetail>,
     #[serde(with = "u128_map_format")]
     pub rewards: HashMap<AccountId, Balance>,
 }
-
-impl Default for Account {
-    fn default() -> Self {
-        Account {
-            sponsor_id: env::current_account_id(),
-            lpt_amount: 0,
-            ve_lpt_amount: 0,
-            unlock_timestamp: 0,
-            duration_sec: 0,
-            proposals: HashMap::new(),
-            rewards: HashMap::new()
-        }
-    }
-}
-
 
 #[derive(BorshSerialize, BorshDeserialize)]
 pub enum VAccount {
@@ -57,7 +55,7 @@ impl From<Account> for VAccount {
 }
 
 impl Account {
-    pub fn new(sponsor_id: &AccountId) -> Self {
+    pub fn new(account_id: &AccountId, sponsor_id: &AccountId) -> Self {
         Account {
             sponsor_id: sponsor_id.clone(),
             lpt_amount: 0,
@@ -65,6 +63,7 @@ impl Account {
             unlock_timestamp: 0,
             duration_sec: 0,
             proposals: HashMap::new(),
+            proposals_history: UnorderedMap::new(StorageKeys::AccountProposalHistory { account_id: account_id.clone() }),
             rewards: HashMap::new()
         }
     }
@@ -75,6 +74,12 @@ impl Account {
                 reward_token.clone(),
                 (reward + self.rewards.get(reward_token).unwrap_or(&0_u128)).clone(),
             );
+        }
+    }
+
+    pub fn add_history(&mut self, history: &HashMap<u32, VoteDetail>){
+        for (proposal_id, vote_detail) in history {
+            self.proposals_history.insert(proposal_id, vote_detail);
         }
     }
 
@@ -133,29 +138,39 @@ impl Account {
 }
 
 impl Contract {
-    pub fn update_impacted_proposals(&mut self, account: &mut Account, prev_ve_lpt_amount: Balance, diff_ve_lpt_amount: Balance, is_increased: bool){
+    pub fn update_impacted_proposals(&mut self, account: &mut Account, diff_ve_lpt_amount: Balance, is_increased: bool){
         let mut rewards = HashMap::new();
-        account.proposals.retain(|proposal_id, action| {
+        let mut history = HashMap::new();
+        account.proposals.retain(|proposal_id, vote_detail| {
             let mut proposal = self.internal_unwrap_proposal(*proposal_id);
             if proposal.status == Some(ProposalStatus::Expired) {
-                self.internal_redeem_near(&mut proposal);
-                if let Some((token_id, reward_amount)) = proposal.claim_reward(prev_ve_lpt_amount){
-                    rewards.insert(token_id.clone(), reward_amount + rewards.get(&token_id).unwrap_or(&0_u128));
+                if let Some((token_id, reward_amount)) = proposal.claim_reward(vote_detail.amount) {
+                    rewards.insert(token_id.clone(), reward_amount);
                 }
                 self.data_mut().proposals.insert(&proposal_id, &proposal.into());
+                history.insert(*proposal_id, vote_detail.clone());
                 false
             } else {
+                let mut is_retain = true;
                 if diff_ve_lpt_amount > 0 {
-                    proposal.update_votes(action, diff_ve_lpt_amount, self.data().cur_total_ve_lpt, is_increased);
-                    if !is_increased && prev_ve_lpt_amount == diff_ve_lpt_amount {
-                        proposal.participants -= 1;
+                    proposal.update_votes(&vote_detail.action, diff_ve_lpt_amount, self.data().cur_total_ve_lpt, is_increased);
+                    if is_increased {
+                        vote_detail.amount += diff_ve_lpt_amount;
+                    } else {
+                        if vote_detail.amount == diff_ve_lpt_amount {
+                            proposal.participants -= 1;
+                            is_retain = false
+                        } else {
+                            vote_detail.amount -= diff_ve_lpt_amount;
+                        }
                     }
                     self.data_mut().proposals.insert(&proposal_id, &proposal.into());
                 }
-                true
+                is_retain
             }
         });
         account.add_rewards(&rewards);
+        account.add_history(&history);
     }
 
     pub fn internal_account_vote(
@@ -168,7 +183,10 @@ impl Contract {
         let ve_lpt_amount = account.ve_lpt_amount;
         require!(ve_lpt_amount > 0, E303_INSUFFICIENT_VE_LPT);
         require!(!account.proposals.contains_key(&proposal_id), E200_ALREADY_VOTED);
-        account.proposals.insert(proposal_id, action.clone());
+        account.proposals.insert(proposal_id, VoteDetail{
+            action: action.clone(),
+            amount: ve_lpt_amount,
+        });
         self.internal_claim_all(&mut account);
         self.data_mut().accounts.insert(proposer, &account.into());
         ve_lpt_amount
@@ -178,14 +196,13 @@ impl Contract {
         &mut self,
         proposer: &AccountId,
         proposal_id: u32,
-    ) -> (Action, Balance) {
+    ) -> VoteDetail {
         let mut account = self.internal_unwrap_account(proposer);
-        let ve_lpt_amount = account.ve_lpt_amount;
         require!(account.proposals.contains_key(&proposal_id), E206_NO_VOTED);
         let action = account.proposals.remove(&proposal_id).unwrap();
         self.internal_claim_all(&mut account);
         self.data_mut().accounts.insert(proposer, &account.into());
-        (action, ve_lpt_amount)
+        action
     }
 }
 
@@ -208,7 +225,7 @@ impl Contract {
             account
         } else {
             self.data_mut().account_count += 1;
-            Account::default()
+            Account::new(account_id, &env::current_account_id())
         }
     }
 

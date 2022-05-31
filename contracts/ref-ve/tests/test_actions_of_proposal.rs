@@ -154,6 +154,17 @@ fn test_action_proposal(){
     assert_eq!(vec![0, to_yocto("200")], e.get_proposal(1).unwrap().votes);
     assert_eq!(vec![0, to_yocto("200"), 0, to_yocto("200")], e.get_proposal(2).unwrap().votes);
 
+    assert_eq!(HashMap::from([(0, VoteDetail{
+        action: Action::VoteFarm { farm_id: 0 },
+        amount: to_yocto("200"),
+    }), (1, VoteDetail{
+        action: Action::VotePoll { poll_id: 1 },
+        amount: to_yocto("200"),
+    }), (2, VoteDetail{
+        action: Action::VoteReject,
+        amount: to_yocto("200"),
+    })]), e.get_vote_detail(&users.alice));
+
     // append
     e.lock_lpt(&users.alice, to_yocto("100"), DEFAULT_MAX_LOCKING_DURATION_SEC).assert_success();
     assert_eq!(vec![to_yocto("400"), 0], e.get_proposal(0).unwrap().votes);
@@ -164,6 +175,19 @@ fn test_action_proposal(){
     assert_eq!(1, e.get_proposal(1).unwrap().participants);
     assert_eq!(1, e.get_proposal(2).unwrap().participants);
 
+    assert_eq!(HashMap::from([(0, VoteDetail{
+        action: Action::VoteFarm { farm_id: 0 },
+        amount: to_yocto("400"),
+    }), (1, VoteDetail{
+        action: Action::VotePoll { poll_id: 1 },
+        amount: to_yocto("400"),
+    }), (2, VoteDetail{
+        action: Action::VoteReject,
+        amount: to_yocto("400"),
+    })]), e.get_vote_detail(&users.alice));
+
+    assert_eq!(HashMap::new(), e.get_unclaimed_proposal(&users.alice));
+
     e.skip_time(DAY_SEC + DEFAULT_MAX_LOCKING_DURATION_SEC);
     println!("{:?}", e.get_proposal(0));
     assert_eq!(FarmingReward { price: 200000000000000000000000000, portion_list: vec![("ref<>celo".to_string(), 2)] }, e.get_proposal(0).unwrap().farming_reward.unwrap());
@@ -172,7 +196,16 @@ fn test_action_proposal(){
     let alice = e.get_account_info(&users.alice).unwrap();
     assert_eq!(to_yocto("200"), alice.lpt_amount);
     assert_eq!(to_yocto("400"), alice.ve_lpt_amount);
-    assert_eq!(HashMap::from([(0, Action::VoteFarm { farm_id: 0 }), (1, Action::VotePoll { poll_id: 1 }), (2, Action::VoteReject)]), alice.proposals);
+    assert_eq!(HashMap::from([(0, VoteDetail{
+        action: Action::VoteFarm { farm_id: 0 },
+        amount: alice.ve_lpt_amount,
+    }), (1, VoteDetail{
+        action: Action::VotePoll { poll_id: 1 },
+        amount: alice.ve_lpt_amount,
+    }), (2, VoteDetail{
+        action: Action::VoteReject,
+        amount: alice.ve_lpt_amount,
+    })]), e.get_vote_detail_history(&users.alice));
 }
 
 #[test]
@@ -290,6 +323,36 @@ fn test_action_proposal_farming_reward_04(){
 }
 
 #[test]
+fn test_action_proposal_farming_reward_05(){
+    let e = init_env();
+    let users = Users::init(&e);
+
+    e.mft_mint(&lpt_inner_id(), &users.alice, to_yocto("200"));
+    e.mft_mint(&lpt_inner_id(), &users.bob, to_yocto("200"));
+    e.mft_mint(&lpt_inner_id(), &users.charlie, to_yocto("200"));
+
+    e.mft_storage_deposit(&lpt_id(), &e.ve_contract.user_account);
+
+    e.lock_lpt(&users.alice, to_yocto("200"), DEFAULT_MAX_LOCKING_DURATION_SEC).assert_success();
+    e.lock_lpt(&users.bob, to_yocto("50"), DEFAULT_MAX_LOCKING_DURATION_SEC).assert_success();
+    e.lock_lpt(&users.charlie, to_yocto("100"), DEFAULT_MAX_LOCKING_DURATION_SEC).assert_success();
+    
+    e.create_proposal(&e.dao, ProposalKind::FarmingReward { farm_list: vec!["ref<>celo".to_string(), "usn<>usdt".to_string(), "ref<>aurora".to_string()], num_portions: 10 }, e.current_time() + DAY_TS, 1000, None, 0).assert_success();
+
+    e.skip_time(DAY_SEC);
+
+    e.action_proposal(&users.alice, 0, Action::VoteFarm { farm_id: 0 }, None).assert_success();
+    e.action_proposal(&users.bob, 0, Action::VoteFarm { farm_id: 1 }, None).assert_success();
+    e.action_proposal(&users.charlie, 0, Action::VoteFarm { farm_id: 2 }, None).assert_success();
+    
+    assert_eq!(vec![to_yocto("400"), to_yocto("100"), to_yocto("200")], e.get_proposal(0).unwrap().votes);
+    assert_eq!(3, e.get_proposal(0).unwrap().participants);
+
+    e.skip_time(DAY_SEC + DEFAULT_MAX_LOCKING_DURATION_SEC);
+    assert_eq!(FarmingReward { price: 66666666666666666666666666, portion_list: vec![("ref<>celo".to_string(), 6), ("ref<>aurora".to_string(), 3), ("usn<>usdt".to_string(), 1)] }, e.get_proposal(0).unwrap().farming_reward.unwrap());
+}
+
+#[test]
 fn test_action_cancel(){
     let e = init_env();
     let users = Users::init(&e);
@@ -315,7 +378,13 @@ fn test_action_cancel(){
     let alice = e.get_account_info(&users.alice).unwrap();
     assert_eq!(to_yocto("100"), alice.lpt_amount);
     assert_eq!(to_yocto("200"), alice.ve_lpt_amount);
-    assert_eq!(HashMap::from([(0, Action::VoteFarm { farm_id: 0 }), (1, Action::VotePoll { poll_id: 1 }), (2, Action::VoteReject)]), alice.proposals);
+    assert_eq!(HashMap::from([(0, VoteDetail {
+        action: Action::VoteFarm { farm_id: 0 }, amount: to_yocto("200")
+    }), (1, VoteDetail {
+        action: Action::VotePoll { poll_id: 1 }, amount: to_yocto("200")
+    }), (2, VoteDetail {
+        action: Action::VoteReject, amount: to_yocto("200")
+    })]), e.get_vote_detail(&users.alice));
 
     // error scene 
     // 1 : E100_ACC_NOT_REGISTERED
@@ -327,14 +396,20 @@ fn test_action_cancel(){
     // success
     e.action_cancel(&users.alice, 0).assert_success();
     assert_eq!(vec![0, 0], e.get_proposal(0).unwrap().votes);
-    assert_eq!(HashMap::from([(1, Action::VotePoll { poll_id: 1 }), (2, Action::VoteReject)]), e.get_account_info(&users.alice).unwrap().proposals);
+    assert_eq!(HashMap::from([(1, VoteDetail {
+        action: Action::VotePoll { poll_id: 1 }, amount: to_yocto("200")
+    }), (2, VoteDetail {
+        action: Action::VoteReject, amount: to_yocto("200")
+    })]), e.get_vote_detail(&users.alice));
 
     // 3 : E206_NO_VOTED
     assert_err!(e.action_cancel(&users.alice, 0), E206_NO_VOTED);
 
     e.action_cancel(&users.alice, 1).assert_success();
     assert_eq!(vec![0, 0], e.get_proposal(1).unwrap().votes);
-    assert_eq!(HashMap::from([(2, Action::VoteReject)]), e.get_account_info(&users.alice).unwrap().proposals);
+    assert_eq!(HashMap::from([(2, VoteDetail {
+        action: Action::VoteReject, amount: to_yocto("200")
+    })]), e.get_vote_detail(&users.alice));
 
     // 4 : E204_VOTE_CAN_NOT_CANCEL
     e.skip_time(DEFAULT_MIN_PROPOSAL_VOTING_PERIOD_SEC);
@@ -342,11 +417,17 @@ fn test_action_cancel(){
     let alice = e.get_account_info(&users.alice).unwrap();
     assert_eq!(to_yocto("100"), alice.lpt_amount);
     assert_eq!(to_yocto("200"), alice.ve_lpt_amount);
-    assert_eq!(HashMap::from([(2, Action::VoteReject)]), alice.proposals);
+    assert_eq!(HashMap::new(), e.get_vote_detail(&users.alice));
+    assert_eq!(HashMap::from([(2, VoteDetail {
+        action: Action::VoteReject, amount: to_yocto("200")
+    })]), e.get_vote_detail_history(&users.alice));
 
     e.lock_lpt(&users.alice, to_yocto("100"), DEFAULT_MAX_LOCKING_DURATION_SEC).assert_success();
     let alice = e.get_account_info(&users.alice).unwrap();
     assert_eq!(to_yocto("200"), alice.lpt_amount);
     assert_eq!(to_yocto("400"), alice.ve_lpt_amount);
-    assert_eq!(HashMap::new(), alice.proposals);
+    assert_eq!(HashMap::new(), e.get_vote_detail(&users.alice));
+    assert_eq!(HashMap::from([(2, VoteDetail {
+        action: Action::VoteReject, amount: to_yocto("200")
+    })]), e.get_vote_detail_history(&users.alice));
 }

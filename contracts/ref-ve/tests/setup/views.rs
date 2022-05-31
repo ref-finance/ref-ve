@@ -33,11 +33,32 @@ impl Env {
         ).unwrap_json::<Option<Proposal>>()
     }
 
-    pub fn get_account_info(&self, user: &UserAccount) -> Option<Account>{
+    pub fn get_account_info(&self, user: &UserAccount) -> Option<AccountInfo>{
         self.owner
         .view_method_call(
             self.ve_contract.contract.get_account_info(user.account_id())
-        ).unwrap_json::<Option<Account>>()
+        ).unwrap_json::<Option<AccountInfo>>()
+    }
+
+    pub fn get_vote_detail(&self, user: &UserAccount) -> HashMap<u32, VoteDetail> {
+        self.owner
+        .view_method_call(
+            self.ve_contract.contract.get_vote_detail(user.account_id())
+        ).unwrap_json::<HashMap<u32, VoteDetail>>()
+    }
+
+    pub fn get_vote_detail_history(&self, user: &UserAccount) -> HashMap<u32, VoteDetail> {
+        self.owner
+        .view_method_call(
+            self.ve_contract.contract.get_vote_detail_history(user.account_id())
+        ).unwrap_json::<HashMap<u32, VoteDetail>>()
+    }
+
+    pub fn get_unclaimed_proposal(&self, user: &UserAccount) -> HashMap<u32, VoteDetail> {
+        self.owner
+        .view_method_call(
+            self.ve_contract.contract.get_unclaimed_proposal(user.account_id())
+        ).unwrap_json::<HashMap<u32, VoteDetail>>()
     }
 
     pub fn get_unclaimed_rewards(&self, user: &UserAccount) -> HashMap<AccountId, U128> {
