@@ -1,16 +1,31 @@
 use crate::*;
+use near_sdk::AccountId;
 
 impl Env {
-    pub fn modify_voting_period_range(
+    pub fn extend_whitelisted_accounts(
         &self,
         operator: &UserAccount,
-        min_voting_period: u32, max_voting_period: u32
+        accounts: Vec<AccountId>
     ) -> ExecutionResult {
         operator
             .function_call(
-                self.ve_contract.contract.modify_voting_period_range(
-                    min_voting_period,
-                    max_voting_period
+                self.ve_contract.contract.extend_whitelisted_accounts(
+                    accounts
+                ),
+                MAX_GAS.0,
+                1,
+            )
+    }
+
+    pub fn remove_whitelisted_accounts(
+        &self,
+        operator: &UserAccount,
+        accounts: Vec<AccountId>
+    ) -> ExecutionResult {
+        operator
+            .function_call(
+                self.ve_contract.contract.remove_whitelisted_accounts(
+                    accounts
                 ),
                 MAX_GAS.0,
                 1,
@@ -47,21 +62,6 @@ impl Env {
             )
     }
 
-    pub fn modify_min_per_lock_lpt_amount(
-        &self,
-        operator: &UserAccount,
-        amount: u128
-    ) -> ExecutionResult {
-        operator
-            .function_call(
-                self.ve_contract.contract.modify_min_per_lock_lpt_amount(
-                    amount.into()
-                ),
-                MAX_GAS.0,
-                1,
-            )
-    }
-
     pub fn modify_locking_policy(
         &self,
         operator: &UserAccount,
@@ -87,18 +87,6 @@ impl Env {
                 self.ve_contract.contract.return_lpt_lostfound(
                     account.account_id(), amount.into()
                 ),
-                MAX_GAS.0,
-                1,
-            )
-    }
-
-    pub fn withdraw_lpt_slashed(
-        &self,
-        operator: &UserAccount,
-    ) -> ExecutionResult {
-        operator
-            .function_call(
-                self.ve_contract.contract.withdraw_lpt_slashed(),
                 MAX_GAS.0,
                 1,
             )

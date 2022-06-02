@@ -109,9 +109,7 @@ impl Contract {
         amount: Balance,
     ) {
         let mut proposal = self.internal_unwrap_proposal(proposal_id);
-        if proposal.proposer == self.data().dao_id {
-            require!(action != &Action::VoteNonsense, E201_INVALID_VOTE);
-        }
+        require!(action != &Action::VoteNonsense, E201_INVALID_VOTE);
         
         // check proposal is inprogress
         match proposal.status {

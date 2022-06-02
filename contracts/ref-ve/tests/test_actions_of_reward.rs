@@ -13,7 +13,9 @@ fn test_claim_and_withdraw_all() {
     e.mft_storage_deposit(&lpt_id(), &e.ve_contract.user_account);
     e.lock_lpt(&users.alice, to_yocto("100"), DEFAULT_MAX_LOCKING_DURATION_SEC).assert_success();
 
-    e.create_proposal(&e.dao, ProposalKind::Poll { descriptions: vec!["topic1".to_string(), "topic2".to_string()] }, e.current_time() + DAY_TS, DEFAULT_MIN_PROPOSAL_VOTING_PERIOD_SEC, Some((tokens.nref.account_id(), IncentiveType::Evenly)), 0).assert_success();
+    e.extend_whitelisted_accounts(&e.owner, vec![users.alice.account_id()]).assert_success();
+
+    e.create_proposal(&users.alice, ProposalKind::Poll { descriptions: vec!["topic1".to_string(), "topic2".to_string()] }, e.current_time() + DAY_TS, DEFAULT_MIN_PROPOSAL_VOTING_PERIOD_SEC, Some((tokens.nref.account_id(), IncentiveType::Evenly)), 0).assert_success();
     e.skip_time(DAY_SEC);
     e.action_proposal(&users.alice, 0, Action::VotePoll { poll_id: 0 }, None).assert_success();
     e.ft_mint(&tokens.nref, &users.alice, to_yocto("100"));
@@ -63,10 +65,13 @@ fn test_claim_reward() {
     e.mft_storage_deposit(&lpt_id(), &e.ve_contract.user_account);
     e.lock_lpt(&users.alice, to_yocto("100"), DEFAULT_MAX_LOCKING_DURATION_SEC).assert_success();
 
-    e.create_proposal(&e.dao, ProposalKind::Poll { descriptions: vec!["topic1".to_string(), "topic2".to_string()] }, e.current_time() + DAY_TS, DEFAULT_MIN_PROPOSAL_VOTING_PERIOD_SEC, Some((tokens.nref.account_id(), IncentiveType::Evenly)), 0).assert_success();
-    e.create_proposal(&e.dao, ProposalKind::Poll { descriptions: vec!["topic11".to_string(), "topic22".to_string()] }, e.current_time() + DAY_TS, DEFAULT_MIN_PROPOSAL_VOTING_PERIOD_SEC, Some((tokens.nref.account_id(), IncentiveType::Evenly)), 0).assert_success();
-    e.create_proposal(&e.dao, ProposalKind::Poll { descriptions: vec!["topic111".to_string(), "topic222".to_string()] }, e.current_time() + DAY_TS, DEFAULT_MIN_PROPOSAL_VOTING_PERIOD_SEC, Some((tokens.nref.account_id(), IncentiveType::Evenly)), 0).assert_success();
-    e.create_proposal(&e.dao, ProposalKind::Poll { descriptions: vec!["topic111".to_string(), "topic222".to_string()] }, e.current_time() + DAY_TS, DEFAULT_MIN_PROPOSAL_VOTING_PERIOD_SEC, None, 0).assert_success();
+    e.extend_whitelisted_accounts(&e.owner, vec![users.dude.account_id()]).assert_success();
+    e.storage_deposit(&users.dude, &users.dude, to_yocto("1"));
+
+    e.create_proposal(&users.dude, ProposalKind::Poll { descriptions: vec!["topic1".to_string(), "topic2".to_string()] }, e.current_time() + DAY_TS, DEFAULT_MIN_PROPOSAL_VOTING_PERIOD_SEC, Some((tokens.nref.account_id(), IncentiveType::Evenly)), 0).assert_success();
+    e.create_proposal(&users.dude, ProposalKind::Poll { descriptions: vec!["topic11".to_string(), "topic22".to_string()] }, e.current_time() + DAY_TS, DEFAULT_MIN_PROPOSAL_VOTING_PERIOD_SEC, Some((tokens.nref.account_id(), IncentiveType::Evenly)), 0).assert_success();
+    e.create_proposal(&users.dude, ProposalKind::Poll { descriptions: vec!["topic111".to_string(), "topic222".to_string()] }, e.current_time() + DAY_TS, DEFAULT_MIN_PROPOSAL_VOTING_PERIOD_SEC, Some((tokens.nref.account_id(), IncentiveType::Evenly)), 0).assert_success();
+    e.create_proposal(&users.dude, ProposalKind::Poll { descriptions: vec!["topic111".to_string(), "topic222".to_string()] }, e.current_time() + DAY_TS, DEFAULT_MIN_PROPOSAL_VOTING_PERIOD_SEC, None, 0).assert_success();
     e.skip_time(DAY_SEC);
     e.action_proposal(&users.alice, 0, Action::VotePoll { poll_id: 0 }, None).assert_success();
     e.action_proposal(&users.alice, 1, Action::VotePoll { poll_id: 0 }, None).assert_success();
@@ -116,7 +121,10 @@ fn test_withdraw_reward() {
     e.mft_storage_deposit(&lpt_id(), &e.ve_contract.user_account);
     e.lock_lpt(&users.alice, to_yocto("100"), DEFAULT_MAX_LOCKING_DURATION_SEC).assert_success();
 
-    e.create_proposal(&e.dao, ProposalKind::Poll { descriptions: vec!["topic1".to_string(), "topic2".to_string()] }, e.current_time() + DAY_TS, DEFAULT_MIN_PROPOSAL_VOTING_PERIOD_SEC, Some((tokens.nref.account_id(), IncentiveType::Evenly)), 0).assert_success();
+    e.extend_whitelisted_accounts(&e.owner, vec![users.dude.account_id()]).assert_success();
+    e.storage_deposit(&users.dude, &users.dude, to_yocto("1"));
+
+    e.create_proposal(&users.dude, ProposalKind::Poll { descriptions: vec!["topic1".to_string(), "topic2".to_string()] }, e.current_time() + DAY_TS, DEFAULT_MIN_PROPOSAL_VOTING_PERIOD_SEC, Some((tokens.nref.account_id(), IncentiveType::Evenly)), 0).assert_success();
     e.skip_time(DAY_SEC);
     e.action_proposal(&users.alice, 0, Action::VotePoll { poll_id: 0 }, None).assert_success();
     e.ft_mint(&tokens.nref, &users.alice, to_yocto("100"));

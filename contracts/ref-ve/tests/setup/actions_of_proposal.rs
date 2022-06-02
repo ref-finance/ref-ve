@@ -36,21 +36,6 @@ impl Env {
             )
     }
 
-    pub fn redeem_near_in_expired_proposal(
-        &self,
-        operator: &UserAccount,
-        proposal_id: u32
-    ) -> ExecutionResult {
-        operator
-            .function_call(
-                self.ve_contract.contract.redeem_near_in_expired_proposal(
-                    proposal_id
-                ),
-                MAX_GAS.0,
-                0,
-            )
-    }
-
     pub fn action_proposal(
         &self,
         operator: &UserAccount,

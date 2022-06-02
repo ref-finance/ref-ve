@@ -11,48 +11,36 @@ impl Contract {
         incentive_detail: Option<(AccountId, IncentiveType)>
     ) -> u32 {
         let proposer = env::predecessor_account_id();
+        require!(self.data().whitelisted_accounts.contains(&proposer) , E002_NOT_ALLOWED);
         
-        let is_dao = proposer == self.data().dao_id;
-
-        if !is_dao {
-            self.internal_unwrap_account(&proposer);
-        }
+        self.internal_unwrap_account(&proposer);
 
         let config = self.internal_config();
-        let lock_amount = check_proposal_attached(&proposer, &config, is_dao);
 
         require!(start_at - env::block_timestamp() >= config.min_proposal_start_vote_offset, E402_INVALID_START_TIME);
 
         let votes = match &kind {
             ProposalKind::FarmingReward{ farm_list, .. } => {
-                require!(is_dao , E002_NOT_ALLOWED);
                 require!(incentive_detail.is_none() , E405_PROPOSAL_NOT_SUPPORT_INCENTIVE);
                 vec![0; farm_list.len()]
             },
             ProposalKind::Poll{ descriptions } => {
-                require!(is_dao , E002_NOT_ALLOWED);
                 vec![0; descriptions.len()]
             },
             ProposalKind::Common{ .. } => {
                 require!(incentive_detail.is_none() , E405_PROPOSAL_NOT_SUPPORT_INCENTIVE);
-                if !is_dao {
-                    require!(duration_sec >= config.min_proposal_voting_period &&
-                        duration_sec <= config.max_proposal_voting_period, E403_INVALID_VOTING_PERIOD);
-                }
                 vec![0; 4]
             }
         };
 
         let mut proposal = Proposal{
             proposer: proposer.clone(),
-            lock_amount,
             kind: kind.clone(),
             votes,
             incentive: None,
             start_at,
             end_at: start_at + to_nano(duration_sec),
             participants: 0,
-            farming_reward: None,
             status: None,
             is_nonsense: None
         };
@@ -72,7 +60,6 @@ impl Contract {
         Event::ProposalCreate {
             proposer_id: &proposer,
             proposal_id: id,
-            lock_near: &U128(lock_amount),
             kind: &format!("{:?}", kind),
             start_at,
             duration_sec,
@@ -95,9 +82,6 @@ impl Contract {
 
         match proposal.status.unwrap() {
             ProposalStatus::WarmUp => {
-                if proposal.lock_amount > 0 {
-                    Promise::new(proposer.clone()).transfer(proposal.lock_amount);
-                }
                 self.data_mut().proposals.remove(&proposal_id);
 
                 Event::ProposalRemote {
@@ -109,21 +93,6 @@ impl Contract {
                 true
             }
             _ => false,
-        }
-    }
-
-    pub fn redeem_near_in_expired_proposal(&mut self, proposal_id: u32) -> bool {
-        let proposer = env::predecessor_account_id();
-
-        let mut proposal = self.internal_unwrap_proposal(proposal_id);
-        require!(proposal.proposer == proposer, E002_NOT_ALLOWED);
-
-        if proposal.status == Some(ProposalStatus::Expired) {
-            self.internal_redeem_near(&mut proposal);
-            self.data_mut().proposals.insert(&proposal_id, &proposal.into());
-            true
-        } else {
-            false
         }
     }
 
@@ -167,22 +136,4 @@ impl Contract {
 
         vote_detail.amount.into()
     }
-}
-
-pub fn check_proposal_attached(proposer:&AccountId, config: &Config, is_dao: bool) -> Balance{
-    let mut deposit_amount = env::attached_deposit();
-    if is_dao {
-        if deposit_amount > 0 {
-            Promise::new(proposer.clone()).transfer(deposit_amount);
-        }
-        deposit_amount = 0;
-    } else {
-        require!(deposit_amount >= config.lock_near_per_proposal, E401_NOT_ENOUGH_LOCK_NEAR);
-        let refund = deposit_amount - config.lock_near_per_proposal;
-        if refund > 0 {
-            Promise::new(proposer.clone()).transfer(refund);
-        }
-        deposit_amount = config.lock_near_per_proposal;
-    }
-    deposit_amount
 }

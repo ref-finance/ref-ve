@@ -7,14 +7,13 @@ use near_sdk::json_types::U64;
 pub struct Metadata {
     pub version: String,
     pub owner_id: AccountId,
-    pub dao_id: AccountId,
     pub operators: Vec<AccountId>,
+    pub whitelisted_accounts: Vec<AccountId>,
     pub account_count: U64,
     pub proposal_count: U64,
     pub cur_total_ve_lpt: U128,
     pub cur_lock_lpt: U128,
     pub lostfound: U128,
-    pub slashed: U128,
 }
 
 #[derive(Serialize)]
@@ -52,14 +51,13 @@ impl Contract {
         Metadata {
             version: env!("CARGO_PKG_VERSION").to_string(),
             owner_id: self.data().owner_id.clone(),
-            dao_id: self.data().dao_id.clone(),
             operators: self.data().operators.to_vec(),
+            whitelisted_accounts: self.data().whitelisted_accounts.to_vec(),
             account_count: self.data().account_count.into(),
             proposal_count: self.data().proposals.len().into(),
             cur_total_ve_lpt: self.data().cur_total_ve_lpt.into(),
             cur_lock_lpt: self.data().cur_lock_lpt.into(),
             lostfound: self.data().lostfound.into(),
-            slashed: self.data().slashed.into(),
         }
     }
 

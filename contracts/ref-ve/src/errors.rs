@@ -24,9 +24,7 @@ pub const E303_INSUFFICIENT_VE_LPT: &str = "E303: Insufficient account ve lpt";
 pub const E304_CAUSE_PRE_UNLOCK: &str = "E304: would cause pre unlock";
 pub const E305_STILL_IN_LOCK: &str = "E305: still in locking";
 
-pub const E401_NOT_ENOUGH_LOCK_NEAR: &str = "E401: not enough lock near";
 pub const E402_INVALID_START_TIME: &str = "E402: invalid start time";
-pub const E403_INVALID_VOTING_PERIOD: &str = "E403: invalid voting period";
 pub const E404_PROPOSAL_NOT_EXIST: &str = "E404: proposal not exist";
 pub const E405_PROPOSAL_NOT_SUPPORT_INCENTIVE: &str = "E405: proposal not support incentive";
 pub const E406_EXPIRED_PROPOSAL: &str = "E406: expired proposal";

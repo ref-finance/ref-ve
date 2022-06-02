@@ -12,9 +12,6 @@ pub const DEFAULT_SEED_SLASH_RATE: u32 = 200;
 pub const DAY_SEC: DurationSec = 60 * 60 * 24;
 pub const DAY_TS: Timestamp = 60 * 60 * 24 * 1_000_000_000;
 
-pub const DEFAULT_MIN_PROPOSAL_VOTING_PERIOD_SEC: DurationSec = DAY_SEC * 14;
-pub const DEFAULT_MAX_PROPOSAL_VOTING_PERIOD_SEC: DurationSec = DAY_SEC * 28;
-
 pub const DEFAULT_MIN_PROPOSAL_START_VOTE_OFFSET: Timestamp = DAY_TS;
 
 pub const DEFAULT_MAX_LOCKING_DURATION_SEC: DurationSec = DAY_SEC * 30 * 12; 
@@ -29,7 +26,6 @@ pub const GAS_FOR_RESOLVE_REWARD_TRANSFER: Gas = Gas(10 * TGAS);
 
 pub const STORAGE_BALANCE_MIN_BOUND: u128 = 1_250_000_000_000_000_000_000;
 pub const DEFAULT_LOCK_NEAR_AMOUNT_FOR_PROPOSAL: Balance = 1_000_000_000_000_000_000_000_000;
-pub const DEFAULT_MIN_PER_LOCK_LPT_AMOUNT: Balance = 1_000_000_000_000_000_000;
 
 pub mod u64_dec_format {
     use near_sdk::serde::de;

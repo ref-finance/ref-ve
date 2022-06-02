@@ -40,9 +40,6 @@ pub struct FarmingReward {
 pub struct Proposal {
     /// Original proposer.
     pub proposer: AccountId,
-    /// The locked near as the endorsement of this proposal
-    #[serde(with = "u128_dec_format")]
-    pub lock_amount: Balance,
     /// Kind of proposal with relevant information.
     pub kind: ProposalKind,
     /// Result of proposal with relevant information.
@@ -61,8 +58,6 @@ pub struct Proposal {
 
     /// Incentive of proposal with relevant information.   
     pub incentive: Option<ProposalIncentive>,
-    #[borsh_skip]
-    pub farming_reward: Option<FarmingReward>,
     #[borsh_skip]
     pub status: Option<ProposalStatus>,
     #[borsh_skip] 
@@ -92,36 +87,6 @@ impl Proposal {
 
     pub fn update_result(&mut self){
         match &self.kind {
-            ProposalKind::FarmingReward { farm_list, num_portions } => {
-                let total_votes: u128 = self.votes.iter().sum();
-                if total_votes >= *num_portions as u128 {
-                    let mut farm_list_with_votes = farm_list.iter().zip(self.votes.clone()).map(|(farm_id, vote)| (farm_id.clone(), vote)).collect::<Vec<(String, u128)>>();
-                    farm_list_with_votes.sort_by(|item_a, item_b| item_b.1.cmp(&item_a.1));
-                    let votes = farm_list_with_votes.iter().map(|item| item.1).collect();
-                    let price = find_portion_price(&votes, *num_portions, total_votes);
-                    let mut portion_list = vec![];
-                    let mut remain_portions = *num_portions as u128;
-                    for (farm_id, vote) in farm_list_with_votes.iter() {
-                        let portions = std::cmp::min(vote / price, remain_portions);
-                        if portions > 0 {
-                            remain_portions -= portions;
-                            portion_list.push((farm_id.clone(), portions as u32));
-                        } else {
-                            break;
-                        }
-                    }
-                    self.farming_reward = Some(FarmingReward{
-                        price,
-                        portion_list
-                    });
-                } else {
-                    self.farming_reward = Some(FarmingReward{
-                        price: 0u128,
-                        portion_list: vec![]
-                    });
-                }
-            },
-            ProposalKind::Poll { .. } => {},
             ProposalKind::Common { .. } => {
                 if self.votes[0] + self.votes[1] < self.votes[2] {
                     self.is_nonsense = Some(true);
@@ -129,6 +94,7 @@ impl Proposal {
                     self.is_nonsense = Some(false);
                 }
             }
+            _ => {},
         }
     }
 
@@ -147,26 +113,6 @@ impl Proposal {
 
 
 impl Contract {
-
-    pub fn internal_redeem_near(&mut self, proposal: &mut Proposal){
-        if proposal.lock_amount > 0 {
-            if proposal.is_nonsense == Some(false) {
-
-                Promise::new(proposal.proposer.clone()).transfer(proposal.lock_amount);
-
-                Event::ProposalRedeem {
-                    proposer_id: &proposal.proposer,
-                    amount: &U128(proposal.lock_amount),
-                }
-                .emit();
-
-            } else {
-                self.data_mut().slashed += proposal.lock_amount;
-            }
-            proposal.lock_amount = 0;
-        }
-    }
-    
     pub fn internal_unwrap_proposal(&self, proposal_id: u32) -> Proposal {
         let mut proposal = self.internal_get_proposal(proposal_id).expect(E404_PROPOSAL_NOT_EXIST);
         proposal.update_status();
@@ -181,26 +127,3 @@ impl Contract {
         self.data_mut().proposals.insert(&proposal_id, &proposal.into());
     }
 }
-
-pub fn find_portion_price(votes: &Vec<u128>, num_portions: u32, total_votes: u128) -> u128{
-    let mut left =  1;
-    let mut right = total_votes + 1;
-    loop {
-        if left == right - 1{
-            break;
-        }
-        let mid = (left + right) / 2;
-        let mut vsum = 0;
-        for vote in votes.iter(){
-            vsum += vote / mid;
-            if vsum >= num_portions as u128 {
-                left = mid;
-                break;
-            }
-        }
-        if left != mid {
-            right = mid;
-        }
-    }
-    left
-} 

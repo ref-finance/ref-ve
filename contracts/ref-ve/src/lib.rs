@@ -56,6 +56,7 @@ pub(crate) enum StorageKeys {
     Operator,
     Config,
     Accounts,
+    WhitelistedAccounts,
     Proposals,
     AccountProposalHistory { account_id: AccountId },
 }
@@ -65,15 +66,10 @@ pub(crate) enum StorageKeys {
 #[cfg_attr(not(target_arch = "wasm32"), derive(Debug, Deserialize))]
 #[serde(crate = "near_sdk::serde")]
 pub struct Config {
-    pub min_proposal_voting_period: u32,
-    pub max_proposal_voting_period: u32,
     #[serde(with = "u64_dec_format")]
     pub min_proposal_start_vote_offset: Timestamp,
     #[serde(with = "u128_dec_format")]
     pub lock_near_per_proposal: Balance,
-    #[serde(with = "u128_dec_format")]
-    pub min_per_lock_lpt_amount: Balance,
-    
     /// The max duration to stake LPT in seconds.
     pub max_locking_duration_sec: DurationSec,
     /// The rate of veLPT for the amount of LPT given for the maximum locking duration.
@@ -94,11 +90,8 @@ impl Config {
 impl Default for Config {
     fn default() -> Self {
         Config {
-            min_proposal_voting_period: DEFAULT_MIN_PROPOSAL_VOTING_PERIOD_SEC,
-            max_proposal_voting_period: DEFAULT_MAX_PROPOSAL_VOTING_PERIOD_SEC,
             min_proposal_start_vote_offset: DEFAULT_MIN_PROPOSAL_START_VOTE_OFFSET,
             lock_near_per_proposal: DEFAULT_LOCK_NEAR_AMOUNT_FOR_PROPOSAL,
-            min_per_lock_lpt_amount: DEFAULT_MIN_PER_LOCK_LPT_AMOUNT,
             max_locking_duration_sec: DEFAULT_MAX_LOCKING_DURATION_SEC,
             max_locking_multiplier: DEFAULT_MAX_LOCKING_REWARD_RATIO,
         }
@@ -108,8 +101,8 @@ impl Default for Config {
 #[derive(BorshDeserialize, BorshSerialize)]
 pub struct ContractData {
     pub owner_id: AccountId,
-    pub dao_id: AccountId,
     pub operators: UnorderedSet<AccountId>,
+    pub whitelisted_accounts: UnorderedSet<AccountId>,
 
     pub config: LazyOption<Config>,
 
@@ -135,8 +128,6 @@ pub struct ContractData {
 
     // if withdraw lpt encounter error, the lpt would go to here
     pub lostfound: Balance,
-
-    pub slashed: Balance 
 }
 
 /// Versioned contract data. Allows to easily upgrade contracts.
@@ -161,8 +152,8 @@ impl Contract {
             ft: FungibleToken::new(b"a".to_vec()),
             data: VersionedContractData::V0100(ContractData {
                 owner_id,
-                dao_id: dao_id.clone(),
                 operators: UnorderedSet::new(StorageKeys::Operator),
+                whitelisted_accounts: UnorderedSet::new(StorageKeys::WhitelistedAccounts),
                 config: LazyOption::new(StorageKeys::Config, Some(&Config::default())),
                 symbol,
                 lptoken_contract_id,
@@ -174,7 +165,6 @@ impl Contract {
                 cur_total_ve_lpt: 0,
                 cur_lock_lpt: 0,
                 lostfound: 0,
-                slashed: 0
             }),
         };
         contract.ft.internal_register_account(&dao_id);
