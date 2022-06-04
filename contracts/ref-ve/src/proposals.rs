@@ -5,7 +5,7 @@ use crate::*;
 pub enum ProposalKind {
     FarmingReward { 
         farm_list: Vec<String>,
-        num_portions: u32
+        total_reward: u32
     },
     Poll {
         descriptions: Vec<String>,
