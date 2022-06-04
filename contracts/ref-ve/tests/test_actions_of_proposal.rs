@@ -18,23 +18,23 @@ fn test_create_proposal(){
     
     // error scene 
     // 1 : E100_ACC_NOT_REGISTERED
-    assert_err!(e.create_proposal(&users.dude, ProposalKind::FarmingReward { farm_list: vec![], num_portions: 2 }, e.current_time(), 1000, None, 0), E100_ACC_NOT_REGISTERED);
+    assert_err!(e.create_proposal(&users.dude, ProposalKind::FarmingReward { farm_list: vec![], total_reward: 2 }, e.current_time(), 1000, None, 0), E100_ACC_NOT_REGISTERED);
     
     // 2 : E002_NOT_ALLOWED just whitelisted accounts can create proposal 
     e.storage_deposit(&users.bob, &users.bob, to_yocto("1"));
-    assert_err!(e.create_proposal(&users.bob, ProposalKind::FarmingReward { farm_list: vec![], num_portions: 2 }, e.current_time(), 1000, None, 0), E002_NOT_ALLOWED);
+    assert_err!(e.create_proposal(&users.bob, ProposalKind::FarmingReward { farm_list: vec![], total_reward: 2 }, e.current_time(), 1000, None, 0), E002_NOT_ALLOWED);
 
     // 3 : E402_INVALID_START_TIME 
-    assert_err!(e.create_proposal(&users.alice, ProposalKind::FarmingReward { farm_list: vec![], num_portions: 2 }, e.current_time(), 1000, None, 0), E402_INVALID_START_TIME);
+    assert_err!(e.create_proposal(&users.alice, ProposalKind::FarmingReward { farm_list: vec![], total_reward: 2 }, e.current_time(), 1000, None, 0), E402_INVALID_START_TIME);
     assert_err!(e.create_proposal(&users.alice, ProposalKind::Poll { descriptions: vec![] }, e.current_time(), 1000, None, 0), E402_INVALID_START_TIME);
     assert_err!(e.create_proposal(&users.alice, ProposalKind::Common { description: "Common Proposal".to_string() }, e.current_time(), 1000, None, to_yocto("1")), E402_INVALID_START_TIME);
 
     // 4 : E405_PROPOSAL_NOT_SUPPORT_INCENTIVE
-    assert_err!(e.create_proposal(&users.alice, ProposalKind::FarmingReward { farm_list: vec![], num_portions: 2 }, e.current_time() + DAY_TS, 1000, Some((tokens.nref.account_id(), IncentiveType::Evenly)), 0), E405_PROPOSAL_NOT_SUPPORT_INCENTIVE);
+    assert_err!(e.create_proposal(&users.alice, ProposalKind::FarmingReward { farm_list: vec![], total_reward: 2 }, e.current_time() + DAY_TS, 1000, Some((tokens.nref.account_id(), IncentiveType::Evenly)), 0), E405_PROPOSAL_NOT_SUPPORT_INCENTIVE);
     assert_err!(e.create_proposal(&users.alice, ProposalKind::Common { description: "Common Proposal".to_string() }, e.current_time() + DAY_TS, 1000, Some((tokens.nref.account_id(), IncentiveType::Evenly)), 0), E405_PROPOSAL_NOT_SUPPORT_INCENTIVE);
 
     let mut before = e.get_metadata();
-    e.create_proposal(&users.alice, ProposalKind::FarmingReward { farm_list: vec![], num_portions: 2 }, e.current_time() + DAY_TS, 1000, None, 0).assert_success();
+    e.create_proposal(&users.alice, ProposalKind::FarmingReward { farm_list: vec![], total_reward: 2 }, e.current_time() + DAY_TS, 1000, None, 0).assert_success();
     e.create_proposal(&users.alice, ProposalKind::Poll { descriptions: vec![] }, e.current_time() + DAY_TS, 1000, None, 0).assert_success();
     e.create_proposal(&users.alice, ProposalKind::Common { description: "Common Proposal".to_string() }, e.current_time() + DAY_TS, DEFAULT_MIN_PROPOSAL_VOTING_PERIOD_SEC, None, to_yocto("1")).assert_success();
     before.proposal_count = 3.into();
@@ -82,7 +82,7 @@ fn test_action_proposal(){
 
     e.extend_whitelisted_accounts(&e.owner, vec![users.bob.account_id()]).assert_success();
     
-    e.create_proposal(&users.bob, ProposalKind::FarmingReward { farm_list: vec!["ref<>celo".to_string(), "usn<>usdt".to_string()], num_portions: 2 }, e.current_time() + DAY_TS, 1000, None, 0).assert_success();
+    e.create_proposal(&users.bob, ProposalKind::FarmingReward { farm_list: vec!["ref<>celo".to_string(), "usn<>usdt".to_string()], total_reward: 2 }, e.current_time() + DAY_TS, 1000, None, 0).assert_success();
     e.create_proposal(&users.bob, ProposalKind::Poll { descriptions: vec!["topic1".to_string(), "topic2".to_string()] }, e.current_time() + DAY_TS, 1000, None, 0).assert_success();
     e.create_proposal(&users.bob, ProposalKind::Common { description: "Common Proposal".to_string() }, e.current_time() + DAY_TS, DEFAULT_MIN_PROPOSAL_VOTING_PERIOD_SEC, None, to_yocto("1")).assert_success();
 
@@ -183,7 +183,7 @@ fn test_action_proposal_farming_reward_01(){
     
     e.extend_whitelisted_accounts(&e.owner, vec![users.bob.account_id()]).assert_success();
 
-    e.create_proposal(&users.bob, ProposalKind::FarmingReward { farm_list: vec!["ref<>celo".to_string(), "usn<>usdt".to_string()], num_portions: 2 }, e.current_time() + DAY_TS, 1000, None, 0).assert_success();
+    e.create_proposal(&users.bob, ProposalKind::FarmingReward { farm_list: vec!["ref<>celo".to_string(), "usn<>usdt".to_string()], total_reward: 2 }, e.current_time() + DAY_TS, 1000, None, 0).assert_success();
 
     e.skip_time(DAY_SEC);
 
@@ -211,7 +211,7 @@ fn test_action_proposal_farming_reward_02(){
     
     e.extend_whitelisted_accounts(&e.owner, vec![users.bob.account_id()]).assert_success();
 
-    e.create_proposal(&users.bob, ProposalKind::FarmingReward { farm_list: vec!["ref<>celo".to_string(), "usn<>usdt".to_string()], num_portions: 2 }, e.current_time() + DAY_TS, 1000, None, 0).assert_success();
+    e.create_proposal(&users.bob, ProposalKind::FarmingReward { farm_list: vec!["ref<>celo".to_string(), "usn<>usdt".to_string()], total_reward: 2 }, e.current_time() + DAY_TS, 1000, None, 0).assert_success();
 
     e.skip_time(DAY_SEC);
 
@@ -241,7 +241,7 @@ fn test_action_proposal_farming_reward_03(){
     
     e.extend_whitelisted_accounts(&e.owner, vec![users.bob.account_id()]).assert_success();
 
-    e.create_proposal(&users.bob, ProposalKind::FarmingReward { farm_list: vec!["ref<>celo".to_string(), "usn<>usdt".to_string(), "ref<>aurora".to_string()], num_portions: 3 }, e.current_time() + DAY_TS, 1000, None, 0).assert_success();
+    e.create_proposal(&users.bob, ProposalKind::FarmingReward { farm_list: vec!["ref<>celo".to_string(), "usn<>usdt".to_string(), "ref<>aurora".to_string()], total_reward: 3 }, e.current_time() + DAY_TS, 1000, None, 0).assert_success();
 
     e.skip_time(DAY_SEC);
 
@@ -272,7 +272,7 @@ fn test_action_proposal_farming_reward_04(){
     
     e.extend_whitelisted_accounts(&e.owner, vec![users.bob.account_id()]).assert_success();
 
-    e.create_proposal(&users.bob, ProposalKind::FarmingReward { farm_list: vec!["ref<>celo".to_string(), "usn<>usdt".to_string(), "ref<>aurora".to_string()], num_portions: 3 }, e.current_time() + DAY_TS, 1000, None, 0).assert_success();
+    e.create_proposal(&users.bob, ProposalKind::FarmingReward { farm_list: vec!["ref<>celo".to_string(), "usn<>usdt".to_string(), "ref<>aurora".to_string()], total_reward: 3 }, e.current_time() + DAY_TS, 1000, None, 0).assert_success();
 
     e.skip_time(DAY_SEC);
 
@@ -303,7 +303,7 @@ fn test_action_proposal_farming_reward_05(){
     
     e.extend_whitelisted_accounts(&e.owner, vec![users.bob.account_id()]).assert_success();
 
-    e.create_proposal(&users.bob, ProposalKind::FarmingReward { farm_list: vec!["ref<>celo".to_string(), "usn<>usdt".to_string(), "ref<>aurora".to_string()], num_portions: 10 }, e.current_time() + DAY_TS, 1000, None, 0).assert_success();
+    e.create_proposal(&users.bob, ProposalKind::FarmingReward { farm_list: vec!["ref<>celo".to_string(), "usn<>usdt".to_string(), "ref<>aurora".to_string()], total_reward: 10 }, e.current_time() + DAY_TS, 1000, None, 0).assert_success();
 
     e.skip_time(DAY_SEC);
 
@@ -329,7 +329,7 @@ fn test_action_cancel(){
     
     e.extend_whitelisted_accounts(&e.owner, vec![users.bob.account_id()]).assert_success();
 
-    e.create_proposal(&users.bob, ProposalKind::FarmingReward { farm_list: vec!["ref<>celo".to_string(), "usn<>usdt".to_string()], num_portions: 2 }, e.current_time() + DAY_TS, 1000, None, 0).assert_success();
+    e.create_proposal(&users.bob, ProposalKind::FarmingReward { farm_list: vec!["ref<>celo".to_string(), "usn<>usdt".to_string()], total_reward: 2 }, e.current_time() + DAY_TS, 1000, None, 0).assert_success();
     e.create_proposal(&users.bob, ProposalKind::Poll { descriptions: vec!["topic1".to_string(), "topic2".to_string()] }, e.current_time() + DAY_TS, 1000, None, 0).assert_success();
     e.create_proposal(&users.bob, ProposalKind::Common { description: "Common Proposal".to_string() }, e.current_time() + DAY_TS, DEFAULT_MIN_PROPOSAL_VOTING_PERIOD_SEC, None, to_yocto("1")).assert_success();
 
