@@ -72,8 +72,6 @@ pub const REF_VE_ID: &str = "ref_ve.near";
 pub const FUNGIBLE_TOKEN_ID: &str = "token.near";
 pub const MULTI_FUNGIBLE_TOKEN_ID: &str = "mutlitoken.near";
 pub const OWNER_ID: &str = "owner.near";
-pub const DAO_ID: &str = "dao.near";
-
 
 pub const DEFAULT_GAS: Gas = Gas(Gas::ONE_TERA.0 * 15);
 pub const MAX_GAS: Gas = Gas(Gas::ONE_TERA.0 * 300);
@@ -89,7 +87,6 @@ pub struct Env {
     pub root: UserAccount,
     pub near: UserAccount,
     pub owner: UserAccount,
-    pub dao: UserAccount,
     pub ve_contract: ContractAccount<VeContract>,
     pub lptoken_contract: ContractAccount<MockMultiFungibleToken>,
 }
@@ -129,10 +126,6 @@ impl Env {
             AccountId::new_unchecked(OWNER_ID.to_string()),
             to_yocto("10000"),
         );
-        let dao = near.create_user(
-            AccountId::new_unchecked(DAO_ID.to_string()),
-            to_yocto("10000"),
-        );
 
         let lptoken_contract = deploy!(
             contract: MockMultiFungibleToken,
@@ -157,7 +150,6 @@ impl Env {
             gas: DEFAULT_GAS.0,
             init_method: new(
                 owner.account_id(),
-                dao.account_id(),
                 "loveRef".to_string(),
                 lptoken_contract.account_id(),
                 lpt_id()
@@ -168,7 +160,6 @@ impl Env {
             root,
             near,
             owner,
-            dao,
             ve_contract,
             lptoken_contract
         }

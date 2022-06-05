@@ -5,12 +5,11 @@ export function initWorkSpace() {
     const owner = await root.createAccount('ref_owner');
     const alice = await root.createAccount('alice');
     const bob = await root.createAccount('bob');
-    const dao = await root.createAccount('dao');
     const lpt_contract = await root.createAccount('lpt');
     const lptoken_id = ':0';
     const symbol = 'loveRef';
 
-    const ref_ve = await deployContract(root, owner.accountId, dao.accountId, symbol, lpt_contract.accountId, lptoken_id);
+    const ref_ve = await deployContract(root, owner.accountId, symbol, lpt_contract.accountId, lptoken_id);
     const ft = await deployFt(root);
     const mft = await deployMft(root);
 
@@ -21,7 +20,6 @@ export function initWorkSpace() {
 export async function deployContract(
   root: NearAccount,
   owner_id: string,
-  dao_id: string,
   symbol: string,
   lptoken_contract_id: string,
   lptoken_id: string,
@@ -34,7 +32,6 @@ export async function deployContract(
       method: 'new',
       args: {
         owner_id,
-        dao_id,
         symbol,
         lptoken_contract_id,
         lptoken_id

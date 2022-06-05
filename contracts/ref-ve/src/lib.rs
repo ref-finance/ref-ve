@@ -146,9 +146,9 @@ pub struct Contract {
 #[near_bindgen]
 impl Contract {
     #[init]
-    pub fn new(owner_id: AccountId, dao_id: AccountId, symbol: String, lptoken_contract_id: AccountId, lptoken_id: String) -> Self {
+    pub fn new(owner_id: AccountId, symbol: String, lptoken_contract_id: AccountId, lptoken_id: String) -> Self {
         require!(!env::state_exists(), E000_ALREADY_INIT);
-        let mut contract = Self {
+        Self {
             ft: FungibleToken::new(b"a".to_vec()),
             data: VersionedContractData::V0100(ContractData {
                 owner_id,
@@ -166,9 +166,7 @@ impl Contract {
                 cur_lock_lpt: 0,
                 lostfound: 0,
             }),
-        };
-        contract.ft.internal_register_account(&dao_id);
-        contract
+        }
     }
 }
 

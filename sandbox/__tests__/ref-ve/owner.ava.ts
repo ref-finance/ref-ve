@@ -10,14 +10,13 @@ workspace.test('set_owner', async (test, { ref_ve, ft, mft, owner, alice, bob })
   test.deepEqual(md, {
     version: '0.0.1',
     owner_id: 'ref_owner.test.near',
-    dao_id: 'dao.test.near',
     operators: [],
+    whitelisted_accounts: [],
     account_count: '0',
     proposal_count: '0',
     cur_total_ve_lpt: '0',
     cur_lock_lpt: '0',
     lostfound: '0',
-    slashed: '0',
   });
 
   await owner.call(ref_ve, 'set_owner', { owner_id: alice }, { attachedDeposit: NEAR.from("1") });

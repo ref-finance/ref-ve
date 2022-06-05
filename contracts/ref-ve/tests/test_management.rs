@@ -46,7 +46,7 @@ fn test_return_lpt_lostfound(){
 
     // error scene 
     // 1 : E002_NOT_ALLOWED
-    assert_err!(e.return_lpt_lostfound(&e.dao, &users.alice, to_yocto("101")), E002_NOT_ALLOWED);
+    assert_err!(e.return_lpt_lostfound(&users.alice, &users.alice, to_yocto("101")), E002_NOT_ALLOWED);
 
     // 2 : E101_INSUFFICIENT_BALANCE
     assert_err!(e.return_lpt_lostfound(&e.owner, &users.alice, to_yocto("101")), E101_INSUFFICIENT_BALANCE);
