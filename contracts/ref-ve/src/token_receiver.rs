@@ -28,7 +28,7 @@ impl FungibleTokenReceiver for Contract {
 
                 Event::RewardDeposit {
                     caller_id: &sender_id,
-                    proposal_id: proposal_id,
+                    proposal_id,
                     token_id: &token_id,
                     deposit_amount: &U128(amount),
                     total_amount: &U128(total_amount),
@@ -104,7 +104,7 @@ impl Contract {
 
         self.update_impacted_proposals(&mut account, increased_ve_lpt, true);
 
-        self.internal_set_account(&account_id, account);
+        self.internal_set_account(account_id, account);
 
         Event::LptDeposit {
             caller_id: account_id,

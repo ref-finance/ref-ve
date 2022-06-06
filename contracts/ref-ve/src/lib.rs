@@ -201,7 +201,7 @@ impl Contract {
 
     fn mint_love_token(&mut self, account_id: &AccountId, amount: Balance){
         if !self.ft.accounts.contains_key(account_id){
-            self.ft.internal_register_account(&account_id);
+            self.ft.internal_register_account(account_id);
         }
         self.ft.internal_deposit(account_id, amount);
     }

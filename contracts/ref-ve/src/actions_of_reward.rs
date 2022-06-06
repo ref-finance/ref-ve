@@ -9,7 +9,7 @@ impl Contract {
         let mut account = self.internal_unwrap_account(&account_id);
         self.internal_claim_all(&mut account);
         account.rewards.retain(|token_id, amount|{
-            self.transfer_reward(&token_id, &account_id, *amount);
+            self.transfer_reward(token_id, &account_id, *amount);
             false
         });
         self.internal_set_account(&account_id, account);
@@ -21,13 +21,10 @@ impl Contract {
         let mut proposal = self.internal_unwrap_proposal(proposal_id);
         if proposal.status == Some(ProposalStatus::Expired) {
             if let Some(vote_detail) = account.proposals.remove(&proposal_id) {
-                match proposal.kind {
-                    ProposalKind::Poll { .. } => {
-                        if let Some((token_id, reward_amount)) = proposal.claim_reward(vote_detail.amount) {
-                            account.add_rewards(&HashMap::from([(token_id, reward_amount)]));
-                        }
-                    },
-                    _ => {}
+                if let ProposalKind::Poll { .. } = proposal.kind {
+                    if let Some((token_id, reward_amount)) = proposal.claim_reward(vote_detail.amount) {
+                        account.add_rewards(&HashMap::from([(token_id, reward_amount)]));
+                    }
                 }
                 account.proposals_history.insert(&proposal_id, &vote_detail);
                 self.internal_set_account(&account_id, account);
@@ -42,7 +39,7 @@ impl Contract {
         let mut account = self.internal_unwrap_account(&account_id);
 
         let total = account.rewards.get(&token_id).unwrap_or(&0_u128);
-        let amount: u128 = amount.map(|v| v.into()).unwrap_or(total.clone());
+        let amount: u128 = amount.map(|v| v.into()).unwrap_or(*total);
 
         if amount > 0 {
             // Note: subtraction, will be reverted if the promise fails.
@@ -121,7 +118,7 @@ impl Contract {
             let mut proposal = self.internal_unwrap_proposal(*proposal_id);
             if proposal.status == Some(ProposalStatus::Expired) {
                 if let Some((token_id, reward_amount)) = proposal.claim_reward(vote_detail.amount){
-                    rewards.insert(token_id.clone(), reward_amount);
+                    rewards.insert(token_id, reward_amount);
                 }
                 history.insert(*proposal_id, vote_detail.clone());
                 self.data_mut().proposals.insert(proposal_id, &proposal.into());

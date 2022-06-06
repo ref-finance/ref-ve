@@ -23,7 +23,7 @@ impl StorageManagement for Contract {
     ) -> StorageBalance {
 
         let amount = env::attached_deposit();
-        let account_id = account_id.unwrap_or_else(|| env::predecessor_account_id());
+        let account_id = account_id.unwrap_or_else(env::predecessor_account_id);
         let sponsor_id = env::predecessor_account_id();
         let already_registered = self.data().accounts.contains_key(&account_id);
         if amount < STORAGE_BALANCE_MIN_BOUND && !already_registered {
@@ -36,7 +36,7 @@ impl StorageManagement for Contract {
             }
         } else {     
             self.ft.internal_register_account(&account_id);       
-            self.internal_set_account(&account_id, Account::new(&account_id, &sponsor_id).into());
+            self.internal_set_account(&account_id, Account::new(&account_id, &sponsor_id));
             self.data_mut().account_count += 1;
             let refund = amount - STORAGE_BALANCE_MIN_BOUND;
             if refund > 0 {
@@ -75,7 +75,7 @@ impl StorageManagement for Contract {
 
             self.internal_remove_account(&account_id);
             if account.sponsor_id != env::current_account_id(){
-                Promise::new(account.sponsor_id.clone()).transfer(STORAGE_BALANCE_MIN_BOUND);
+                Promise::new(account.sponsor_id).transfer(STORAGE_BALANCE_MIN_BOUND);
             }
             true
         } else {

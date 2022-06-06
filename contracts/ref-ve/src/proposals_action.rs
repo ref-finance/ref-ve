@@ -116,7 +116,7 @@ impl Contract {
             Some(ProposalStatus::InProgress) => {
                 // update proposal result
                 proposal.update_votes(
-                    &action,
+                    action,
                     amount,
                     self.data().cur_total_ve_lpt,
                     true
@@ -144,7 +144,7 @@ impl Contract {
             Some(ProposalStatus::InProgress) => {
                 // update proposal result
                 proposal.update_votes(
-                    &action,
+                    action,
                     amount,
                     self.data().cur_total_ve_lpt,
                     false

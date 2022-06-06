@@ -72,7 +72,7 @@ impl Account {
         for (reward_token, reward) in rewards {
             self.rewards.insert(
                 reward_token.clone(),
-                (reward + self.rewards.get(reward_token).unwrap_or(&0_u128)).clone(),
+                reward + self.rewards.get(reward_token).unwrap_or(&0_u128),
             );
         }
     }
@@ -102,7 +102,7 @@ impl Account {
         if self.unlock_timestamp > 0 && self.unlock_timestamp > timestamp {
             // exist lpt locked need relock
             require!(self.unlock_timestamp <= new_unlock_timestamp, E304_CAUSE_PRE_UNLOCK);
-            let relocked_ve = compute_ve_lpt_amount(&config, self.lpt_amount, duration_sec);
+            let relocked_ve = compute_ve_lpt_amount(config, self.lpt_amount, duration_sec);
             self.ve_lpt_amount = std::cmp::max(self.ve_lpt_amount, relocked_ve);
             let extra_x = compute_ve_lpt_amount(config, amount, duration_sec);
             self.ve_lpt_amount += extra_x;
@@ -145,9 +145,9 @@ impl Contract {
             let mut proposal = self.internal_unwrap_proposal(*proposal_id);
             if proposal.status == Some(ProposalStatus::Expired) {
                 if let Some((token_id, reward_amount)) = proposal.claim_reward(vote_detail.amount) {
-                    rewards.insert(token_id.clone(), reward_amount);
+                    rewards.insert(token_id, reward_amount);
                 }
-                self.data_mut().proposals.insert(&proposal_id, &proposal.into());
+                self.data_mut().proposals.insert(proposal_id, &proposal.into());
                 history.insert(*proposal_id, vote_detail.clone());
                 false
             } else {
@@ -156,15 +156,13 @@ impl Contract {
                     proposal.update_votes(&vote_detail.action, diff_ve_lpt_amount, self.data().cur_total_ve_lpt, is_increased);
                     if is_increased {
                         vote_detail.amount += diff_ve_lpt_amount;
+                    } else if vote_detail.amount == diff_ve_lpt_amount {
+                        proposal.participants -= 1;
+                        is_retain = false
                     } else {
-                        if vote_detail.amount == diff_ve_lpt_amount {
-                            proposal.participants -= 1;
-                            is_retain = false
-                        } else {
-                            vote_detail.amount -= diff_ve_lpt_amount;
-                        }
+                        vote_detail.amount -= diff_ve_lpt_amount;
                     }
-                    self.data_mut().proposals.insert(&proposal_id, &proposal.into());
+                    self.data_mut().proposals.insert(proposal_id, &proposal.into());
                 }
                 is_retain
             }

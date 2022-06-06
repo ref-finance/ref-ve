@@ -86,15 +86,12 @@ impl From<Proposal> for VProposal {
 impl Proposal {
 
     pub fn update_result(&mut self){
-        match &self.kind {
-            ProposalKind::Common { .. } => {
-                if self.votes[0] + self.votes[1] < self.votes[2] {
-                    self.is_nonsense = Some(true);
-                } else {
-                    self.is_nonsense = Some(false);
-                }
+        if let ProposalKind::Common { .. } = &self.kind {
+            if self.votes[0] + self.votes[1] < self.votes[2] {
+                self.is_nonsense = Some(true);
+            } else {
+                self.is_nonsense = Some(false);
             }
-            _ => {},
         }
     }
 

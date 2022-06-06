@@ -121,7 +121,7 @@ impl Contract {
                 ve_lpt_amount: account.ve_lpt_amount,
                 unlock_timestamp: account.unlock_timestamp,
                 duration_sec: account.duration_sec,
-                rewards: account.rewards.clone(),
+                rewards: account.rewards,
             })
         } else {
             None
@@ -176,13 +176,10 @@ impl Contract {
             for (proposal_id, vote_detail) in account.proposals {
                 let proposal = self.internal_unwrap_proposal(proposal_id);
                 if proposal.status == Some(ProposalStatus::Expired) {
-                    match proposal.kind {
-                        ProposalKind::Poll { .. } => {
-                            if proposal.incentive.is_some() {
-                                result.insert(proposal_id, vote_detail.clone());
-                            }
-                        },
-                        _ => {}
+                    if let ProposalKind::Poll { .. } = proposal.kind {
+                        if proposal.incentive.is_some() {
+                            result.insert(proposal_id, vote_detail.clone());
+                        }
                     }
                 }
             }
