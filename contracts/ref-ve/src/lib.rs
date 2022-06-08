@@ -68,8 +68,8 @@ pub(crate) enum StorageKeys {
 pub struct Config {
     #[serde(with = "u64_dec_format")]
     pub min_proposal_start_vote_offset: Timestamp,
-    #[serde(with = "u128_dec_format")]
-    pub lock_near_per_proposal: Balance,
+    /// The min duration to stake LPT in seconds.
+    pub min_locking_duration_sec: DurationSec,
     /// The max duration to stake LPT in seconds.
     pub max_locking_duration_sec: DurationSec,
     /// The rate of veLPT for the amount of LPT given for the maximum locking duration.
@@ -91,7 +91,7 @@ impl Default for Config {
     fn default() -> Self {
         Config {
             min_proposal_start_vote_offset: DEFAULT_MIN_PROPOSAL_START_VOTE_OFFSET,
-            lock_near_per_proposal: DEFAULT_LOCK_NEAR_AMOUNT_FOR_PROPOSAL,
+            min_locking_duration_sec: DEFAULT_MIN_LOCKING_DURATION_SEC,
             max_locking_duration_sec: DEFAULT_MAX_LOCKING_DURATION_SEC,
             max_locking_multiplier: DEFAULT_MAX_LOCKING_REWARD_RATIO,
         }
@@ -112,6 +112,7 @@ pub struct ContractData {
     pub lptoken_contract_id: AccountId,
     // which lptoken used for locking
     pub lptoken_id: String,
+    pub lptoken_decimals: u8,
     
     /// Last available id for the proposals.
     pub last_proposal_id: u32,
@@ -146,7 +147,7 @@ pub struct Contract {
 #[near_bindgen]
 impl Contract {
     #[init]
-    pub fn new(owner_id: AccountId, symbol: String, lptoken_contract_id: AccountId, lptoken_id: String) -> Self {
+    pub fn new(owner_id: AccountId, symbol: String, lptoken_contract_id: AccountId, lptoken_id: String, lptoken_decimals: u8) -> Self {
         require!(!env::state_exists(), E000_ALREADY_INIT);
         Self {
             ft: FungibleToken::new(b"a".to_vec()),
@@ -158,6 +159,7 @@ impl Contract {
                 symbol,
                 lptoken_contract_id,
                 lptoken_id,
+                lptoken_decimals,
                 last_proposal_id: 0,
                 proposals: UnorderedMap::new(StorageKeys::Proposals),
                 accounts: LookupMap::new(StorageKeys::Accounts),
@@ -244,7 +246,7 @@ impl FungibleTokenMetadataProvider for Contract {
             icon: Some(String::from(data_url)),
             reference: None,
             reference_hash: None,
-            decimals: 18,
+            decimals: LOVE_DECIMAL,
         }
     }
 }

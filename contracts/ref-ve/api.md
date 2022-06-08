@@ -66,19 +66,25 @@ Note:
 - To sucessfully unregister, user should withdraw all his lptoken and reward tokens before calling `storage_unregister`.
 - Support having a sponsor to deposit storage for user, in that case, when `storage_unregister`, the fixed 0.00125 near would transfer back to that sponsor. Can use `get_account_info(account_id)` to check it.
 
-### User Lock/Withdraw
-**Lock**  
-are executed by calling lptoken's `mft_transfer_call ` with the following msg:
+### User Lock/Append/Withdraw
 ```rust
 enum MFTokenReceiverMessage {
-    Lock { duration_sec: u32 }
+    Lock { duration_sec: u32 },
+    Append { append_duration_sec: u32 }
 }
 ```
+**Lock**  
+are executed by calling lptoken's `mft_transfer_call ` with the following msg:
 Eg:
 ```bash
-near call $MFT mft_transfer_call '{"receiver_id": "'$VE'", "token_id": ":0", "amount": "1'$ZERO18'", "msg": "{\"Lock\":{\"duration_sec\":5184000}}"}' --account_id=u1.testnet --depositYocto=1 --gas=150$TGAS
+near call $MFT mft_transfer_call '{"receiver_id": "'$VE'", "token_id": ":0", "amount": "1'$ZERO24'", "msg": "{\"Lock\":{\"duration_sec\":5184000}}"}' --account_id=u1.testnet --depositYocto=1 --gas=150$TGAS
 ```
-
+**Append** 
+are executed by calling lptoken's `mft_transfer_call ` with the following msg:
+Eg:
+```bash
+near call $MFT mft_transfer_call '{"receiver_id": "'$VE'", "token_id": ":0", "amount": "1'$ZERO24'", "msg": "{\"Append\":{\"append_duration_sec\":0}}"}' --account_id=u1.testnet --depositYocto=1 --gas=150$TGAS
+```
 **Withdraw**  
 are unified into one interface `withdraw_lpt`:
 ```rust
@@ -125,7 +131,7 @@ pub enum IncentiveType{
 pub fn create_proposal(
         &mut self,
         kind: ProposalKind,
-        start_at: Timestamp,
+        start_at: u32,
         duration_sec: u32,
         incentive_detail: Option<(AccountId, IncentiveType)>
     ) -> u32
@@ -134,19 +140,19 @@ Eg:
 
 create farming reward proposal
 ```bash
-near call $VE create_proposal '{"kind": {"FarmingReward":{"farm_list":["ref<>celo", "usn<>usdt"],"total_reward": 200000}}, "start_at": 1654650000000000000, "duration_sec": 86400 }' --account_id=u1.testnet 
+near call $VE create_proposal '{"kind": {"FarmingReward":{"farm_list":["ref<>celo", "usn<>usdt"],"total_reward": 200000}}, "start_at": 1654650000, "duration_sec": 86400 }' --account_id=u1.testnet 
 ```
 create common proposal
 ```bash
-near call $VE create_proposal '{"kind": {"Common":{"description":"xxx"}}, "start_at": 1654650000000000000, "duration_sec": 5184000 }' --account_id=u1.testnet 
+near call $VE create_proposal '{"kind": {"Common":{"description":"xxx"}}, "start_at": 1654650000, "duration_sec": 5184000 }' --account_id=u1.testnet 
 ```
 create poll no incentive
 ```bash
-near call $VE create_proposal '{"kind": {"Poll":{"descriptions":["topic1", "topic2"]}}, "start_at": 1654650000000000000, "duration_sec": 5184000 }' --account_id=u1.testnet 
+near call $VE create_proposal '{"kind": {"Poll":{"descriptions":["topic1", "topic2"]}}, "start_at": 1654650000, "duration_sec": 5184000 }' --account_id=u1.testnet 
 ```
 create poll with incentive
 ```bash
-near call $VE create_proposal '{"kind": {"Poll":{"descriptions":["topic1", "topic2"]}}, "start_at": 1654660800000000000, "duration_sec": 5184000, "incentive_detail": ["dev-20220607004539-57436357604278", "Proportion"] }' --account_id=u1.testnet 
+near call $VE create_proposal '{"kind": {"Poll":{"descriptions":["topic1", "topic2"]}}, "start_at": 1654650000, "duration_sec": 5184000, "incentive_detail": ["dev-20220607004539-57436357604278", "Proportion"] }' --account_id=u1.testnet 
 ```
 **Remove Proposal** 
 ```rust
@@ -208,8 +214,8 @@ Note:
 pub fn extend_whitelisted_accounts(&mut self, accounts: Vec<AccountId>);
 pub fn remove_whitelisted_accounts(&mut self, accounts: Vec<AccountId>);
 
-pub fn modify_min_start_vote_offset(&mut self, min_start_vote_offset: Timestamp);
-pub fn modify_locking_policy(&mut self, max_duration: DurationSec, max_ratio: u32);
+pub fn modify_min_start_vote_offset(&mut self, min_start_vote_offset: u32);
+pub fn modify_locking_policy(&mut self, min_duration: DurationSec, max_duration: DurationSec, max_ratio: u32);
 
 pub fn return_lpt_lostfound(&mut self, account_id: AccountId, amount: U128) -> Promise;
 ```
@@ -223,9 +229,12 @@ near view $VE get_metadata
   owner_id: 'ref-ve.testnet',
   operators: [],
   whitelisted_accounts: [],
+  lptoken_contract_id: 'exchange.ref-dev.testnet',
+  lptoken_id: ':269',
+  lptoken_decimals: 24,
   account_count: '2',
   proposal_count: '0',
-  cur_total_ve_lpt: '200000000000000000000',
+  cur_total_ve_lpt: '200000000000000000000000000',
   cur_lock_lpt: '100000000000000000000',
   lostfound: '0'
 }
@@ -315,7 +324,7 @@ near view $VE get_unclaimed_rewards '{"account_id": "xxx"}'
 near view $VE get_account_info '{"account_id": "xxx"}'
 {
   sponsor_id: 'user_account_id',
-  lpt_amount: '100000000000000000000',
+  lpt_amount: '100000000000000000000000000',
   ve_lpt_amount: '200000000000000000000',
   unlock_timestamp: '1685625923349461711',
   duration_sec: 31104000,

@@ -8,12 +8,15 @@ uint::construct_uint!(
 
 pub type DurationSec = u32;
 
+pub const LOVE_DECIMAL: u8 = 18;
+
 pub const DEFAULT_SEED_SLASH_RATE: u32 = 200;
 pub const DAY_SEC: DurationSec = 60 * 60 * 24;
 pub const DAY_TS: Timestamp = 60 * 60 * 24 * 1_000_000_000;
 
 pub const DEFAULT_MIN_PROPOSAL_START_VOTE_OFFSET: Timestamp = DAY_TS;
 
+pub const DEFAULT_MIN_LOCKING_DURATION_SEC: DurationSec = DAY_SEC * 30;
 pub const DEFAULT_MAX_LOCKING_DURATION_SEC: DurationSec = DAY_SEC * 30 * 12; 
 pub const DEFAULT_MAX_LOCKING_REWARD_RATIO: u32 = 20000;
 pub const MIN_LOCKING_REWARD_RATIO: u32 = 10000;
@@ -25,7 +28,6 @@ pub const GAS_FOR_REWARD_TRANSFER: Gas = Gas(20 * TGAS);
 pub const GAS_FOR_RESOLVE_REWARD_TRANSFER: Gas = Gas(10 * TGAS);
 
 pub const STORAGE_BALANCE_MIN_BOUND: u128 = 1_250_000_000_000_000_000_000;
-pub const DEFAULT_LOCK_NEAR_AMOUNT_FOR_PROPOSAL: Balance = 1_000_000_000_000_000_000_000_000;
 
 pub mod u64_dec_format {
     use near_sdk::serde::de;

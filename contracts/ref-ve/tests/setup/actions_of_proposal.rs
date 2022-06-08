@@ -6,7 +6,7 @@ impl Env {
         &self,
         operator: &UserAccount,
         kind: ProposalKind,
-        start_at: u64,
+        start_at: u32,
         duration_sec: u32,
         incentive_detail: Option<(AccountId, IncentiveType)>,
         deposit: Balance

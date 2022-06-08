@@ -9,21 +9,19 @@ fn test_modify_config(){
 
     let config = e.get_config();
     assert_eq!(config.min_proposal_start_vote_offset, DEFAULT_MIN_PROPOSAL_START_VOTE_OFFSET);
-    assert_eq!(config.lock_near_per_proposal, DEFAULT_LOCK_NEAR_AMOUNT_FOR_PROPOSAL);
+    assert_eq!(config.min_locking_duration_sec, DEFAULT_MIN_LOCKING_DURATION_SEC);
     assert_eq!(config.max_locking_duration_sec, DEFAULT_MAX_LOCKING_DURATION_SEC);
     assert_eq!(config.max_locking_multiplier, DEFAULT_MAX_LOCKING_REWARD_RATIO);
 
     e.extend_operators(&e.owner, vec![&users.alice], 1).assert_success();
 
     e.modify_min_start_vote_offset(&users.alice, 500).assert_success();
-    assert_eq!(e.get_config().min_proposal_start_vote_offset, 500);
+    assert_eq!(e.get_config().min_proposal_start_vote_offset, to_nano(500));
 
-    e.modify_lock_near_per_proposal(&users.alice, 1111).assert_success();
-    assert_eq!(e.get_config().lock_near_per_proposal, 1111);
+    assert_err!(e.modify_locking_policy(&users.alice, 500, 1000, 3000), E301_INVALID_RATIO);
 
-    assert_err!(e.modify_locking_policy(&users.alice, 1000, 3000), E301_INVALID_RATIO);
-
-    e.modify_locking_policy(&users.alice, 1000, 30000).assert_success();
+    e.modify_locking_policy(&users.alice, 500, 1000, 30000).assert_success();
+    assert_eq!(e.get_config().min_locking_duration_sec, 500);
     assert_eq!(e.get_config().max_locking_duration_sec, 1000);
     assert_eq!(e.get_config().max_locking_multiplier, 30000);
 }

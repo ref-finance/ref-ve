@@ -55,7 +55,8 @@ pub trait MFTTokenReceiver {
 #[derive(Serialize, Deserialize)]
 #[serde(crate = "near_sdk::serde")]
 enum MFTokenReceiverMessage {
-    Lock { duration_sec: u32 }
+    Lock { duration_sec: u32 },
+    Append { append_duration_sec: u32 }
 }
 
 #[near_bindgen]
@@ -78,9 +79,14 @@ impl MFTTokenReceiver for Contract {
             MFTokenReceiverMessage::Lock { duration_sec } => {
                 require!(amount > 0, E101_INSUFFICIENT_BALANCE);
                 self.lock_lpt(&sender_id, amount, duration_sec);
-            }
+            },
+            MFTokenReceiverMessage::Append { append_duration_sec } => {
+                require!(amount > 0, E101_INSUFFICIENT_BALANCE);
+                self.append_lpt(&sender_id, amount, append_duration_sec);
+            },
         }
-        PromiseOrValue::Value(U128(0))
+        let refund = self.clac_refund(amount);
+        PromiseOrValue::Value(U128(refund))
     }
 }
 
@@ -94,9 +100,11 @@ impl Contract {
     ) {
         let mut account = self.internal_unwrap_or_default_account(account_id);
         let config = self.internal_config();
+        require!(duration_sec >= config.min_locking_duration_sec, E302_INVALID_DURATION);
         require!(duration_sec <= config.max_locking_duration_sec, E302_INVALID_DURATION);
 
-        let increased_ve_lpt = account.lock_lpt(amount, duration_sec, &config);
+        let increased_ve_lpt = account.lock_lpt(amount, duration_sec, &config, self.data().lptoken_decimals);
+        require!(increased_ve_lpt > 0, E101_INSUFFICIENT_BALANCE);
         self.mint_love_token(account_id, increased_ve_lpt);
 
         self.data_mut().cur_lock_lpt += amount;
@@ -113,5 +121,48 @@ impl Contract {
             duration: duration_sec,
         }
         .emit();
+    }
+
+    pub fn append_lpt(
+        &mut self,
+        account_id: &AccountId,
+        amount: Balance,
+        append_duration_sec: u32,
+    ) {
+        let mut account = self.internal_unwrap_or_default_account(account_id);
+        require!(account.unlock_timestamp != 0, E105_ACC_NOT_LOCKED);
+        let timestamp = env::block_timestamp();
+        let duration_sec = nano_to_sec(account.unlock_timestamp - timestamp) + append_duration_sec;
+
+        let config = self.internal_config();
+        require!(duration_sec >= config.min_locking_duration_sec, E302_INVALID_DURATION);
+        require!(duration_sec <= config.max_locking_duration_sec, E302_INVALID_DURATION);
+
+        let increased_ve_lpt = account.lock_lpt(amount, duration_sec, &config, self.data().lptoken_decimals);
+        require!(increased_ve_lpt > 0, E101_INSUFFICIENT_BALANCE);
+        self.mint_love_token(account_id, increased_ve_lpt);
+
+        self.data_mut().cur_lock_lpt += amount;
+        self.data_mut().cur_total_ve_lpt += increased_ve_lpt;
+
+        self.update_impacted_proposals(&mut account, increased_ve_lpt, true);
+
+        self.internal_set_account(account_id, account);
+
+        Event::LptAppend {
+            caller_id: account_id,
+            deposit_amount: &U128(amount),
+            increased_ve_lpt: &U128(increased_ve_lpt),
+            duration: duration_sec,
+        }
+        .emit();
+    }
+
+    pub fn clac_refund(&self, amount: Balance) -> Balance {
+        if self.data().lptoken_decimals > LOVE_DECIMAL {
+            amount % 10u128.pow((self.data().lptoken_decimals - LOVE_DECIMAL) as u32)
+        } else {
+            0
+        }
     }
 }

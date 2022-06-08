@@ -16,7 +16,7 @@ pub use ref_ve::{ContractContract as VeContract,
 pub use ref_ve::{
     DAY_SEC, DAY_TS,
     DEFAULT_MIN_PROPOSAL_START_VOTE_OFFSET, DEFAULT_MAX_LOCKING_DURATION_SEC, DEFAULT_MAX_LOCKING_REWARD_RATIO,
-    DEFAULT_LOCK_NEAR_AMOUNT_FOR_PROPOSAL
+    DEFAULT_MIN_LOCKING_DURATION_SEC
 };
 
 pub use ref_ve::{
@@ -152,7 +152,8 @@ impl Env {
                 owner.account_id(),
                 "loveRef".to_string(),
                 lptoken_contract.account_id(),
-                lpt_id()
+                lpt_id(),
+                24
             )
         );
 
@@ -223,4 +224,16 @@ macro_rules! assert_err{
     ($exec_func: expr, $err_info: expr)=>{
         assert!(format!("{:?}", $exec_func.promise_errors()[0].as_ref().unwrap().status()).contains($err_info));
     };
+}
+
+pub fn to_ve_token(value: &str) -> u128 {
+    let vals: Vec<_> = value.split('.').collect();
+    let part1 = vals[0].parse::<u128>().unwrap() * 10u128.pow(18);
+    if vals.len() > 1 {
+        let power = vals[1].len() as u32;
+        let part2 = vals[1].parse::<u128>().unwrap() * 10u128.pow(18 - power);
+        part1 + part2
+    } else {
+        part1
+    }
 }

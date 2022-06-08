@@ -1,4 +1,5 @@
 use crate::*;
+use std::cmp::Ordering;
 
 #[derive(BorshSerialize, BorshDeserialize, Serialize, Clone)]
 #[cfg_attr(not(target_arch = "wasm32"), derive(Debug, Deserialize, PartialEq))]
@@ -93,7 +94,7 @@ impl Account {
         }
     }
 
-    pub fn lock_lpt(&mut self, amount: Balance, duration_sec: u32, config: &Config) -> Balance {
+    pub fn lock_lpt(&mut self, amount: Balance, duration_sec: u32, config: &Config, lptoken_decimals: u8) -> Balance {
         let prev = self.ve_lpt_amount;
 
         let timestamp = env::block_timestamp();
@@ -102,12 +103,12 @@ impl Account {
         if self.unlock_timestamp > 0 && self.unlock_timestamp > timestamp {
             // exist lpt locked need relock
             require!(self.unlock_timestamp <= new_unlock_timestamp, E304_CAUSE_PRE_UNLOCK);
-            let relocked_ve = compute_ve_lpt_amount(config, self.lpt_amount, duration_sec);
+            let relocked_ve = compute_ve_lpt_amount(config, self.lpt_amount, duration_sec, lptoken_decimals);
             self.ve_lpt_amount = std::cmp::max(self.ve_lpt_amount, relocked_ve);
-            let extra_x = compute_ve_lpt_amount(config, amount, duration_sec);
+            let extra_x = compute_ve_lpt_amount(config, amount, duration_sec, lptoken_decimals);
             self.ve_lpt_amount += extra_x;
         } else {
-            self.ve_lpt_amount = compute_ve_lpt_amount(config, self.lpt_amount + amount, duration_sec);
+            self.ve_lpt_amount = compute_ve_lpt_amount(config, self.lpt_amount + amount, duration_sec, lptoken_decimals);
         }
         self.unlock_timestamp = new_unlock_timestamp;
         self.lpt_amount += amount;
@@ -233,7 +234,12 @@ impl Contract {
     }
 }
 
-fn compute_ve_lpt_amount(config: &Config, amount: u128, duration_sec: u32) -> u128 {
+fn compute_ve_lpt_amount(config: &Config, amount: u128, duration_sec: u32, lptoken_decimals: u8) -> u128 {
+    let amount = match lptoken_decimals.cmp(&LOVE_DECIMAL) {
+        Ordering::Greater => amount / 10u128.pow((lptoken_decimals - LOVE_DECIMAL) as u32),
+        Ordering::Less => amount * 10u128.pow((LOVE_DECIMAL - lptoken_decimals) as u32),
+        Ordering::Equal => amount,
+    };
     amount
         + u128_ratio(
             amount,

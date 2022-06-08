@@ -66,6 +66,12 @@ pub enum Event<'a> {
         increased_ve_lpt: &'a U128,
         duration: u32,
     },
+    LptAppend {
+        caller_id: &'a AccountId,
+        deposit_amount: &'a U128,
+        increased_ve_lpt: &'a U128,
+        duration: u32,
+    },
 }
 
 impl Event<'_> {
@@ -229,6 +235,19 @@ mod tests {
         assert_eq!(
             test_utils::get_logs()[0],
             r#"EVENT_JSON:{"standard":"ref-ve","version":"1.0.0","event":"lpt_deposit","data":[{"caller_id":"alice","deposit_amount":"100","increased_ve_lpt":"200","duration":1000000}]}"#
+        );
+    }
+
+    #[test]
+    fn event_lpt_append() {
+        let caller_id = &alice();
+        let deposit_amount = &U128(100);
+        let increased_ve_lpt = &U128(200);
+        let duration = 1000000;
+        Event::LptAppend { caller_id, deposit_amount, increased_ve_lpt, duration }.emit();
+        assert_eq!(
+            test_utils::get_logs()[0],
+            r#"EVENT_JSON:{"standard":"ref-ve","version":"1.0.0","event":"lpt_append","data":[{"caller_id":"alice","deposit_amount":"100","increased_ve_lpt":"200","duration":1000000}]}"#
         );
     }
 }

@@ -47,4 +47,26 @@ impl Env {
             1,
         )
     }
+
+    pub fn append_lpt(
+        &self,
+        user: &UserAccount,
+        amount: Balance,
+        append_duration_sec: u32,
+    ) -> ExecutionResult {
+        user.call(
+            self.lptoken_contract.account_id(),
+            "mft_transfer_call",
+            &json!({
+                "token_id": &lpt_id(),
+                "receiver_id": self.ve_contract.user_account.account_id(),
+                "amount": U128::from(amount),
+                "msg": format!("{{\"Append\": {{\"append_duration_sec\": {}}}}}", append_duration_sec),
+            })
+            .to_string()
+            .into_bytes(),
+            MAX_GAS.0,
+            1,
+        )
+    }
 }

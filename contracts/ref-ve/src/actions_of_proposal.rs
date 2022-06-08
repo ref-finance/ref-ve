@@ -6,7 +6,7 @@ impl Contract {
     pub fn create_proposal(
         &mut self,
         kind: ProposalKind,
-        start_at: Timestamp,
+        start_at: u32,
         duration_sec: u32,
         incentive_detail: Option<(AccountId, IncentiveType)>
     ) -> u32 {
@@ -17,7 +17,7 @@ impl Contract {
 
         let config = self.internal_config();
 
-        require!(start_at - env::block_timestamp() >= config.min_proposal_start_vote_offset, E402_INVALID_START_TIME);
+        require!(to_nano(start_at) - env::block_timestamp() >= config.min_proposal_start_vote_offset, E402_INVALID_START_TIME);
 
         let votes = match &kind {
             ProposalKind::FarmingReward{ farm_list, .. } => {
@@ -38,8 +38,8 @@ impl Contract {
             kind: kind.clone(),
             votes,
             incentive: None,
-            start_at,
-            end_at: start_at + to_nano(duration_sec),
+            start_at: to_nano(start_at),
+            end_at: to_nano(start_at + duration_sec),
             participants: 0,
             status: None,
             is_nonsense: None
@@ -61,7 +61,7 @@ impl Contract {
             proposer_id: &proposer,
             proposal_id: id,
             kind: &format!("{:?}", kind),
-            start_at,
+            start_at: to_nano(start_at),
             duration_sec,
             incentive_detail: &format!("{:?}", incentive_detail),
         }

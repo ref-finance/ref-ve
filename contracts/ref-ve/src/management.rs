@@ -23,33 +23,23 @@ impl Contract {
     }
 
     #[payable]
-    pub fn modify_min_start_vote_offset(&mut self, min_start_vote_offset: Timestamp) {
+    pub fn modify_min_start_vote_offset(&mut self, min_start_vote_offset: u32) {
         assert_one_yocto();
         require!(self.is_owner_or_operators(), E002_NOT_ALLOWED);
         
         let mut config =  self.data().config.get().unwrap();
-        config.min_proposal_start_vote_offset = min_start_vote_offset;
+        config.min_proposal_start_vote_offset = to_nano(min_start_vote_offset);
         
         self.data_mut().config.set(&config);
     }
 
     #[payable]
-    pub fn modify_lock_near_per_proposal(&mut self, amount: U128) {
+    pub fn modify_locking_policy(&mut self, min_duration: DurationSec, max_duration: DurationSec, max_ratio: u32) {
         assert_one_yocto();
         require!(self.is_owner_or_operators(), E002_NOT_ALLOWED);
         
         let mut config =  self.data().config.get().unwrap();
-        config.lock_near_per_proposal = amount.0;
-        
-        self.data_mut().config.set(&config);
-    }
-
-    #[payable]
-    pub fn modify_locking_policy(&mut self, max_duration: DurationSec, max_ratio: u32) {
-        assert_one_yocto();
-        require!(self.is_owner_or_operators(), E002_NOT_ALLOWED);
-        
-        let mut config =  self.data().config.get().unwrap();
+        config.min_locking_duration_sec = min_duration;
         config.max_locking_duration_sec = max_duration;
         config.max_locking_multiplier = max_ratio;
         
