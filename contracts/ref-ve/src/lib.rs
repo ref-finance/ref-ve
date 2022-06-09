@@ -66,8 +66,7 @@ pub(crate) enum StorageKeys {
 #[cfg_attr(not(target_arch = "wasm32"), derive(Debug, Deserialize))]
 #[serde(crate = "near_sdk::serde")]
 pub struct Config {
-    #[serde(with = "u64_dec_format")]
-    pub min_proposal_start_vote_offset: Timestamp,
+    pub min_proposal_start_vote_offset_sec: u32,
     /// The min duration to stake LPT in seconds.
     pub min_locking_duration_sec: DurationSec,
     /// The max duration to stake LPT in seconds.
@@ -90,7 +89,7 @@ impl Config {
 impl Default for Config {
     fn default() -> Self {
         Config {
-            min_proposal_start_vote_offset: DEFAULT_MIN_PROPOSAL_START_VOTE_OFFSET,
+            min_proposal_start_vote_offset_sec: DEFAULT_MIN_PROPOSAL_START_VOTE_OFFSET_SEC,
             min_locking_duration_sec: DEFAULT_MIN_LOCKING_DURATION_SEC,
             max_locking_duration_sec: DEFAULT_MAX_LOCKING_DURATION_SEC,
             max_locking_multiplier: DEFAULT_MAX_LOCKING_REWARD_RATIO,

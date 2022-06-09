@@ -25,6 +25,7 @@ impl Contract {
                     if let Some((token_id, reward_amount)) = proposal.claim_reward(vote_detail.amount) {
                         account.add_rewards(&HashMap::from([(token_id, reward_amount)]));
                     }
+                    self.data_mut().proposals.insert(&proposal_id, &proposal.into());
                 }
                 account.proposals_history.insert(&proposal_id, &vote_detail);
                 self.internal_set_account(&account_id, account);

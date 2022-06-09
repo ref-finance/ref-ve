@@ -10,12 +10,8 @@ pub type DurationSec = u32;
 
 pub const LOVE_DECIMAL: u8 = 18;
 
-pub const DEFAULT_SEED_SLASH_RATE: u32 = 200;
 pub const DAY_SEC: DurationSec = 60 * 60 * 24;
-pub const DAY_TS: Timestamp = 60 * 60 * 24 * 1_000_000_000;
-
-pub const DEFAULT_MIN_PROPOSAL_START_VOTE_OFFSET: Timestamp = DAY_TS;
-
+pub const DEFAULT_MIN_PROPOSAL_START_VOTE_OFFSET_SEC: u32 = DAY_SEC;
 pub const DEFAULT_MIN_LOCKING_DURATION_SEC: DurationSec = DAY_SEC * 30;
 pub const DEFAULT_MAX_LOCKING_DURATION_SEC: DurationSec = DAY_SEC * 30 * 12; 
 pub const DEFAULT_MAX_LOCKING_REWARD_RATIO: u32 = 20000;

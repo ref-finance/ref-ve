@@ -106,7 +106,7 @@ enum FTokenReceiverMessage {
 ```
 Eg:
 ```bash
-near call ref.$FT ft_transfer_call '{"receiver_id": "'$VE'", "amount": "36'$ZERO18'", "msg": "{\"Reward\":{\"proposal_id\":0}}"}' --account_id=u1.testnet --depositYocto=1 --gas=100$TGAS || true
+near call ref.$FT ft_transfer_call '{"receiver_id": "'$VE'", "amount": "36'$ZERO18'", "msg": "{\"Reward\":{\"proposal_id\":0,\"incentive_type\": \"Proportion\"}}"}' --account_id=u1.testnet --depositYocto=1 --gas=100$TGAS || true
 ```
 ### Proposal
 
@@ -146,13 +146,9 @@ create common proposal
 ```bash
 near call $VE create_proposal '{"kind": {"Common":{"description":"xxx"}}, "start_at": 1654650000, "duration_sec": 5184000 }' --account_id=u1.testnet 
 ```
-create poll no incentive
+create poll
 ```bash
 near call $VE create_proposal '{"kind": {"Poll":{"descriptions":["topic1", "topic2"]}}, "start_at": 1654650000, "duration_sec": 5184000 }' --account_id=u1.testnet 
-```
-create poll with incentive
-```bash
-near call $VE create_proposal '{"kind": {"Poll":{"descriptions":["topic1", "topic2"]}}, "start_at": 1654650000, "duration_sec": 5184000, "incentive_detail": ["dev-20220607004539-57436357604278", "Proportion"] }' --account_id=u1.testnet 
 ```
 **Remove Proposal** 
 ```rust
@@ -214,7 +210,7 @@ Note:
 pub fn extend_whitelisted_accounts(&mut self, accounts: Vec<AccountId>);
 pub fn remove_whitelisted_accounts(&mut self, accounts: Vec<AccountId>);
 
-pub fn modify_min_start_vote_offset(&mut self, min_start_vote_offset: u32);
+pub fn modify_min_start_vote_offset_sec(&mut self, min_start_vote_offset_sec: u32);
 pub fn modify_locking_policy(&mut self, min_duration: DurationSec, max_duration: DurationSec, max_ratio: u32);
 
 pub fn return_lpt_lostfound(&mut self, account_id: AccountId, amount: U128) -> Promise;
@@ -241,7 +237,8 @@ near view $VE get_metadata
 
 near view $VE get_config
 {
-  min_proposal_start_vote_offset: '86400000000000',
+  min_proposal_start_vote_offset_sec: '86400',
+  min_locking_duration_sec: 2592000,
   max_locking_duration_sec: 31104000,
   max_locking_multiplier: 20000
 }
@@ -295,8 +292,8 @@ near view $VE list_proposals
     participants: '0',
     incentive: {
       incentive_type: 'Proportion',
-      incentive_token_id: 'dev-20220607004539-57436357604278',
-      incentive_amount: '0',
+      incentive_token_id: 'token_id',
+      incentive_amount: '1000000000000000000',
       claimed_amount: '0'
     },
     status: 'WarmUp',
@@ -319,8 +316,6 @@ near view $VE get_proposal '{"proposal_id": 0}'
   is_nonsense: null
 }
 
-near view $VE get_unclaimed_rewards '{"account_id": "xxx"}'
-
 near view $VE get_account_info '{"account_id": "xxx"}'
 {
   sponsor_id: 'user_account_id',
@@ -330,6 +325,8 @@ near view $VE get_account_info '{"account_id": "xxx"}'
   duration_sec: 31104000,
   rewards: []
 }
+
+near view $VE get_unclaimed_rewards '{"account_id": "xxx"}'
 
 near view $VE get_vote_detail '{"account_id": "xxx"}'
 

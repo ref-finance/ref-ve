@@ -6,7 +6,7 @@ use near_sdk::{serde_json, PromiseOrValue};
 #[derive(Serialize, Deserialize)]
 #[serde(crate = "near_sdk::serde")]
 enum FTokenReceiverMessage {
-    Reward { proposal_id: u32 }
+    Reward { proposal_id: u32, incentive_type: IncentiveType }
 }
 
 #[near_bindgen]
@@ -22,9 +22,9 @@ impl FungibleTokenReceiver for Contract {
         let message =
             serde_json::from_str::<FTokenReceiverMessage>(&msg).expect(E500_INVALID_MSG);
         match message {
-            FTokenReceiverMessage::Reward { proposal_id } => {
+            FTokenReceiverMessage::Reward { proposal_id, incentive_type } => {
 
-                let (total_amount, start_at) = self.internal_deposit_reward(proposal_id, &token_id, amount);
+                let (total_amount, start_at) = self.internal_deposit_reward(proposal_id, incentive_type, &token_id, amount);
 
                 Event::RewardDeposit {
                     caller_id: &sender_id,
@@ -69,7 +69,9 @@ impl MFTTokenReceiver for Contract {
         amount: U128,
         msg: String,
     ) -> PromiseOrValue<U128> {
-        let amount: u128 = amount.into();
+        let (amount, refund) = self.real_amount_and_refund(amount.into());
+        require!(amount > 0, E101_INSUFFICIENT_BALANCE);
+
         require!(token_id == self.data().lptoken_id, E600_MFT_INVALID_LPTOKEN_ID);
         require!(env::predecessor_account_id() == self.data().lptoken_contract_id, E601_MFT_INVALID_LPTOKEN_CONTRACT);
         
@@ -77,15 +79,12 @@ impl MFTTokenReceiver for Contract {
             serde_json::from_str::<MFTokenReceiverMessage>(&msg).expect(E500_INVALID_MSG);
         match message {
             MFTokenReceiverMessage::Lock { duration_sec } => {
-                require!(amount > 0, E101_INSUFFICIENT_BALANCE);
                 self.lock_lpt(&sender_id, amount, duration_sec);
             },
             MFTokenReceiverMessage::Append { append_duration_sec } => {
-                require!(amount > 0, E101_INSUFFICIENT_BALANCE);
                 self.append_lpt(&sender_id, amount, append_duration_sec);
             },
         }
-        let refund = self.clac_refund(amount);
         PromiseOrValue::Value(U128(refund))
     }
 }
@@ -158,11 +157,12 @@ impl Contract {
         .emit();
     }
 
-    pub fn clac_refund(&self, amount: Balance) -> Balance {
+    pub fn real_amount_and_refund(&self, amount: Balance) -> (Balance, Balance) {
         if self.data().lptoken_decimals > LOVE_DECIMAL {
-            amount % 10u128.pow((self.data().lptoken_decimals - LOVE_DECIMAL) as u32)
+            let decimals_diff = 10u128.pow((self.data().lptoken_decimals - LOVE_DECIMAL) as u32);
+            (amount / decimals_diff * decimals_diff, amount % decimals_diff)
         } else {
-            0
+            (amount, 0)
         }
     }
 }

@@ -32,14 +32,14 @@ impl Env {
             )
     }
 
-    pub fn modify_min_start_vote_offset(
+    pub fn modify_min_start_vote_offset_sec(
         &self,
         operator: &UserAccount,
         min_start_vote_offset: u32
     ) -> ExecutionResult {
         operator
             .function_call(
-                self.ve_contract.contract.modify_min_start_vote_offset(
+                self.ve_contract.contract.modify_min_start_vote_offset_sec(
                     min_start_vote_offset
                 ),
                 MAX_GAS.0,

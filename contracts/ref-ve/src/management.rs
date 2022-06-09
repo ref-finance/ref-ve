@@ -23,12 +23,12 @@ impl Contract {
     }
 
     #[payable]
-    pub fn modify_min_start_vote_offset(&mut self, min_start_vote_offset: u32) {
+    pub fn modify_min_start_vote_offset_sec(&mut self, min_start_vote_offset_sec: u32) {
         assert_one_yocto();
         require!(self.is_owner_or_operators(), E002_NOT_ALLOWED);
         
         let mut config =  self.data().config.get().unwrap();
-        config.min_proposal_start_vote_offset = to_nano(min_start_vote_offset);
+        config.min_proposal_start_vote_offset_sec = min_start_vote_offset_sec;
         
         self.data_mut().config.set(&config);
     }

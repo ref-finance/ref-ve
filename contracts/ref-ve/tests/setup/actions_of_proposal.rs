@@ -1,5 +1,5 @@
 use crate::*;
-use near_sdk::{AccountId, Balance};
+use near_sdk::Balance;
 
 impl Env {
     pub fn create_proposal(
@@ -8,13 +8,12 @@ impl Env {
         kind: ProposalKind,
         start_at: u32,
         duration_sec: u32,
-        incentive_detail: Option<(AccountId, IncentiveType)>,
         deposit: Balance
     ) -> ExecutionResult {
         operator
             .function_call(
                 self.ve_contract.contract.create_proposal(
-                    kind, start_at, duration_sec, incentive_detail
+                    kind, start_at, duration_sec
                 ),
                 MAX_GAS.0,
                 deposit,

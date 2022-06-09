@@ -15,7 +15,6 @@ pub enum Event<'a> {
         kind: &'a String,
         start_at: u64,
         duration_sec: u32,
-        incentive_detail: &'a String,
     },
     ProposalRemote {
         proposer_id: &'a AccountId,
@@ -119,11 +118,10 @@ mod tests {
         let kind = &format!("{:?}", ProposalKind::FarmingReward{ farm_list: vec!["ref<>celo".to_string(), "usn<>usdt".to_string()], total_reward: 2});
         let start_at = 1000_u64;
         let duration_sec = 500_u32;
-        let incentive_detail = &format!("{:?}", Some((token_id(), IncentiveType::Evenly)));
-        Event::ProposalCreate { proposer_id, proposal_id, kind, start_at, duration_sec, incentive_detail }.emit();
+        Event::ProposalCreate { proposer_id, proposal_id, kind, start_at, duration_sec }.emit();
         assert_eq!(
             test_utils::get_logs()[0],
-            r#"EVENT_JSON:{"standard":"ref-ve","version":"1.0.0","event":"proposal_create","data":[{"proposer_id":"alice","proposal_id":0,"kind":"FarmingReward { farm_list: [\"ref<>celo\", \"usn<>usdt\"], total_reward: 2 }","start_at":1000,"duration_sec":500,"incentive_detail":"Some((AccountId(\"ref\"), Evenly))"}]}"#
+            r#"EVENT_JSON:{"standard":"ref-ve","version":"1.0.0","event":"proposal_create","data":[{"proposer_id":"alice","proposal_id":0,"kind":"FarmingReward { farm_list: [\"ref<>celo\", \"usn<>usdt\"], total_reward: 2 }","start_at":1000,"duration_sec":500}]}"#
         );
     }
 

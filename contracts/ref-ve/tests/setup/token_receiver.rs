@@ -17,7 +17,7 @@ impl Env {
             &json!({
                 "receiver_id": self.ve_contract.user_account.account_id(),
                 "amount": U128::from(amount),
-                "msg": format!("{{\"Reward\": {{\"proposal_id\": {}}}}}", proposal_id),
+                "msg": format!("{{\"Reward\": {{\"proposal_id\": {}, \"incentive_type\": \"Proportion\"}}}}", proposal_id),
             })
             .to_string()
             .into_bytes(),

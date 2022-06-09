@@ -8,7 +8,6 @@ impl Contract {
         kind: ProposalKind,
         start_at: u32,
         duration_sec: u32,
-        incentive_detail: Option<(AccountId, IncentiveType)>
     ) -> u32 {
         let proposer = env::predecessor_account_id();
         require!(self.data().whitelisted_accounts.contains(&proposer) , E002_NOT_ALLOWED);
@@ -17,23 +16,21 @@ impl Contract {
 
         let config = self.internal_config();
 
-        require!(to_nano(start_at) - env::block_timestamp() >= config.min_proposal_start_vote_offset, E402_INVALID_START_TIME);
+        require!(start_at - nano_to_sec(env::block_timestamp()) >= config.min_proposal_start_vote_offset_sec, E402_INVALID_START_TIME);
 
         let votes = match &kind {
             ProposalKind::FarmingReward{ farm_list, .. } => {
-                require!(incentive_detail.is_none() , E405_PROPOSAL_NOT_SUPPORT_INCENTIVE);
                 vec![0; farm_list.len()]
             },
             ProposalKind::Poll{ descriptions } => {
                 vec![0; descriptions.len()]
             },
             ProposalKind::Common{ .. } => {
-                require!(incentive_detail.is_none() , E405_PROPOSAL_NOT_SUPPORT_INCENTIVE);
                 vec![0; 4]
             }
         };
 
-        let mut proposal = Proposal{
+        let proposal = Proposal{
             proposer: proposer.clone(),
             kind: kind.clone(),
             votes,
@@ -45,15 +42,6 @@ impl Contract {
             is_nonsense: None
         };
 
-        if let Some((incentive_token_id, incentive_type)) = incentive_detail.clone() {
-            proposal.incentive = Some(ProposalIncentive{
-                incentive_type,
-                incentive_token_id,
-                incentive_amount: 0u128,
-                claimed_amount: 0u128
-            });
-        }
-
         let id = self.data().last_proposal_id;
         self.data_mut().proposals.insert(&id, &proposal.into());
 
@@ -62,8 +50,7 @@ impl Contract {
             proposal_id: id,
             kind: &format!("{:?}", kind),
             start_at: to_nano(start_at),
-            duration_sec,
-            incentive_detail: &format!("{:?}", incentive_detail),
+            duration_sec
         }
         .emit();
         
