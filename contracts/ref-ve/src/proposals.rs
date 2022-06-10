@@ -38,6 +38,7 @@ pub struct FarmingReward {
 #[cfg_attr(not(target_arch = "wasm32"), derive(Debug, Deserialize))]
 #[serde(crate = "near_sdk::serde")]
 pub struct Proposal {
+    pub id: u32,
     /// Original proposer.
     pub proposer: AccountId,
     /// Kind of proposal with relevant information.

@@ -249,6 +249,7 @@ near view $VE get_contract_storage_report
 near view $VE list_proposals
 [
   {
+    id: 0,
     proposer: 'user_account_id',
     kind: {
       FarmingReward: { farm_list: [ 'ref<>celo', 'usn<>usdt' ], total_reward: 200000 }
@@ -262,6 +263,7 @@ near view $VE list_proposals
     is_nonsense: null
   },
   {
+    id: 1,
     proposer: 'user_account_id',
     kind: { Common: { description: 'xxx' } },
     votes: [ '0', '0', '0', '0' ],
@@ -273,6 +275,7 @@ near view $VE list_proposals
     is_nonsense: null
   },
   {
+    id: 2,
     proposer: 'user_account_id',
     kind: { Poll: { descriptions: [ 'topic1', 'topic2' ] } },
     votes: [ '0', '0' ],
@@ -284,6 +287,7 @@ near view $VE list_proposals
     is_nonsense: null
   },
   {
+    id: 3,
     proposer: 'user_account_id',
     kind: { Poll: { descriptions: [ 'topic1', 'topic2' ] } },
     votes: [ '0', '0' ],
@@ -303,6 +307,7 @@ near view $VE list_proposals
 
 near view $VE get_proposal '{"proposal_id": 0}'
 {
+  id: 0,
   proposer: 'user_account_id',
   kind: {
     FarmingReward: { farm_list: [ 'ref<>celo', 'usn<>usdt' ], total_reward: 200000 }
@@ -327,13 +332,35 @@ near view $VE get_account_info '{"account_id": "xxx"}'
 }
 
 near view $VE get_unclaimed_rewards '{"account_id": "xxx"}'
+{ 'token_id': '100000000000000000000' }
 
 near view $VE get_vote_detail '{"account_id": "xxx"}'
+{
+  '7': {
+    action: { VoteFarm: { farm_id: 0 } },
+    amount: '200000000000000000000'
+  }
+}
 
 near view $VE get_vote_detail_history '{"account_id": "xxx"}'
+{
+  '7': {
+    action: { VoteFarm: { farm_id: 0 } },
+    amount: '200000000000000000000'
+  },
+  '9': {
+    action: { VotePoll: { poll_id: 0 } },
+    amount: '200000000000000000000'
+  }
+}
 
 near view $VE get_unclaimed_proposal '{"account_id": "xxx"}'
-
+{
+  '9': {
+    action: { VotePoll: { poll_id: 0 } },
+    amount: '200000000000000000000'
+  }
+}
 ```
 
 **Storage**

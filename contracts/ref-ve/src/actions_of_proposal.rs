@@ -30,7 +30,9 @@ impl Contract {
             }
         };
 
+        let id = self.data().last_proposal_id;
         let proposal = Proposal{
+            id,
             proposer: proposer.clone(),
             kind: kind.clone(),
             votes,
@@ -41,8 +43,6 @@ impl Contract {
             status: None,
             is_nonsense: None
         };
-
-        let id = self.data().last_proposal_id;
         self.data_mut().proposals.insert(&id, &proposal.into());
 
         Event::ProposalCreate {
