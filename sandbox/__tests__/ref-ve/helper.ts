@@ -8,8 +8,9 @@ export function initWorkSpace() {
     const lpt_contract = await root.createAccount('lpt');
     const lptoken_id = ':0';
     const symbol = 'loveRef';
+    const lptoken_decimals = 24;
 
-    const ref_ve = await deployContract(root, owner.accountId, symbol, lpt_contract.accountId, lptoken_id);
+    const ref_ve = await deployContract(root, owner.accountId, symbol, lpt_contract.accountId, lptoken_id, lptoken_decimals);
     const ft = await deployFt(root);
     const mft = await deployMft(root);
 
@@ -23,6 +24,7 @@ export async function deployContract(
   symbol: string,
   lptoken_contract_id: string,
   lptoken_id: string,
+  lptoken_decimals: number,
   contractId = 'ref-ve',
 ) {
   return root.createAndDeploy(
@@ -34,7 +36,8 @@ export async function deployContract(
         owner_id,
         symbol,
         lptoken_contract_id,
-        lptoken_id
+        lptoken_id,
+        lptoken_decimals
       }
     }
   )
