@@ -3,14 +3,6 @@ use near_contract_standards::storage_management::{
     StorageBalance, StorageBalanceBounds, StorageManagement,
 };
 
-// use std::convert::TryInto;
-
-// use near_sdk::json_types::{ValidAccountId, U128};
-// use near_sdk::{assert_one_yocto, env, near_bindgen, Promise};
-
-
-
-
 /// Implements users storage management for the pool.
 #[near_bindgen]
 impl StorageManagement for Contract {
@@ -59,7 +51,7 @@ impl StorageManagement for Contract {
         assert_one_yocto();
 
         // force option is useless, leave it for compatible consideration.
-        // User should withdraw all his rewards and seeds token before unregister!
+        // User should withdraw all his rewards and lpt token before unregister!
 
         let account_id = env::predecessor_account_id();
         if let Some(account) = self.internal_get_account(&account_id) {
