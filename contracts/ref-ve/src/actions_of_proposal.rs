@@ -71,7 +71,7 @@ impl Contract {
             ProposalStatus::WarmUp => {
                 self.data_mut().proposals.remove(&proposal_id);
 
-                Event::ProposalRemote {
+                Event::ProposalRemove {
                     proposer_id: &proposer,
                     proposal_id,
                 }
@@ -85,9 +85,9 @@ impl Contract {
 
     pub fn action_proposal(&mut self, proposal_id: u32, action: Action, memo: Option<String>) -> U128 {
 
-        let proposer = env::predecessor_account_id();
+        let voter = env::predecessor_account_id();
 
-        let ve_lpt_amount = self.internal_account_vote(&proposer, proposal_id, &action);
+        let ve_lpt_amount = self.internal_account_vote(&voter, proposal_id, &action);
 
         self.internal_append_vote(proposal_id, &action, ve_lpt_amount);
 
@@ -96,7 +96,7 @@ impl Contract {
         }
 
         Event::ActionProposal {
-            proposer_id: &proposer,
+            voter_id: &voter,
             proposal_id,
             action: &format!("{:?}", action)
         }
@@ -108,14 +108,14 @@ impl Contract {
     #[payable]
     pub fn action_cancel(&mut self, proposal_id: u32) -> U128 {
         assert_one_yocto();
-        let proposer = env::predecessor_account_id();
+        let voter = env::predecessor_account_id();
 
-        let vote_detail = self.internal_account_cancel_vote(&proposer, proposal_id);
+        let vote_detail = self.internal_account_cancel_vote(&voter, proposal_id);
 
         self.internal_cancel_vote(proposal_id, &vote_detail.action, vote_detail.amount);
 
         Event::ActionCancel {
-            proposer_id: &proposer,
+            voter_id: &voter,
             proposal_id,
             action: &format!("{:?}", vote_detail.action)
         }

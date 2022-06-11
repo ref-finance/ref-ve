@@ -76,7 +76,7 @@ impl Contract {
                 self.data_mut().lostfound += amount;
 
                 Event::LptWithdrawLostfound {
-                    proposer_id: &sender_id,
+                    caller_id: &sender_id,
                     withdraw_amount: &U128(amount),
                     success: false,
                 }
@@ -84,7 +84,7 @@ impl Contract {
             },
             PromiseResult::Successful(_) => {
                 Event::LptWithdrawLostfound {
-                    proposer_id: &sender_id,
+                    caller_id: &sender_id,
                     withdraw_amount: &U128(amount),
                     success: true,
                 }

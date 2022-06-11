@@ -16,36 +16,32 @@ pub enum Event<'a> {
         start_at: u64,
         duration_sec: u32,
     },
-    ProposalRemote {
+    ProposalRemove {
         proposer_id: &'a AccountId,
         proposal_id: u32,
     },
-    ProposalRedeem {
-        proposer_id: &'a AccountId,
-        amount: &'a U128,
-    },
     ActionProposal {
-        proposer_id: &'a AccountId,
+        voter_id: &'a AccountId,
         proposal_id: u32,
         action: &'a String,
     },
     ActionCancel {
-        proposer_id: &'a AccountId,
+        voter_id: &'a AccountId,
         proposal_id: u32,
         action: &'a String,
     },
     LptWithdraw {
-        proposer_id: &'a AccountId,
+        caller_id: &'a AccountId,
         withdraw_amount: &'a U128,
         success: bool,
     },
     LptWithdrawLostfound {
-        proposer_id: &'a AccountId,
+        caller_id: &'a AccountId,
         withdraw_amount: &'a U128,
         success: bool,
     },
     RewardWithdraw {
-        proposer_id: &'a AccountId,
+        caller_id: &'a AccountId,
         token_id: &'a AccountId,
         withdraw_amount: &'a U128,
         success: bool,
@@ -59,7 +55,7 @@ pub enum Event<'a> {
         total_amount: &'a U128,
         start_at: u64,
     },
-    LptDeposit {
+    LptLock {
         caller_id: &'a AccountId,
         deposit_amount: &'a U128,
         increased_ve_lpt: &'a U128,
@@ -129,82 +125,71 @@ mod tests {
     fn event_proposal_remote() {
         let proposer_id = &alice();
         let proposal_id = 0;
-        Event::ProposalRemote { proposer_id, proposal_id }.emit();
+        Event::ProposalRemove { proposer_id, proposal_id }.emit();
         assert_eq!(
             test_utils::get_logs()[0],
-            r#"EVENT_JSON:{"standard":"ref-ve","version":"1.0.0","event":"proposal_remote","data":[{"proposer_id":"alice","proposal_id":0}]}"#
-        );
-    }
-
-    #[test]
-    fn event_proposal_redeem() {
-        let proposer_id = &alice();
-        let amount = &U128(100);
-        Event::ProposalRedeem { proposer_id, amount }.emit();
-        assert_eq!(
-            test_utils::get_logs()[0],
-            r#"EVENT_JSON:{"standard":"ref-ve","version":"1.0.0","event":"proposal_redeem","data":[{"proposer_id":"alice","amount":"100"}]}"#
+            r#"EVENT_JSON:{"standard":"ref-ve","version":"1.0.0","event":"proposal_remove","data":[{"proposer_id":"alice","proposal_id":0}]}"#
         );
     }
 
     #[test]
     fn event_action_proposal() {
-        let proposer_id = &alice();
+        let voter_id = &alice();
         let proposal_id = 0;
         let action = &format!("{:?}", Action::VoteApprove);
-        Event::ActionProposal { proposer_id, proposal_id, action }.emit();
+        Event::ActionProposal { voter_id, proposal_id, action }.emit();
         assert_eq!(
             test_utils::get_logs()[0],
-            r#"EVENT_JSON:{"standard":"ref-ve","version":"1.0.0","event":"action_proposal","data":[{"proposer_id":"alice","proposal_id":0,"action":"VoteApprove"}]}"#
+            r#"EVENT_JSON:{"standard":"ref-ve","version":"1.0.0","event":"action_proposal","data":[{"voter_id":"alice","proposal_id":0,"action":"VoteApprove"}]}"#
         );
     }
 
     #[test]
     fn event_action_cancel() {
-        let proposer_id = &alice();
+        let voter_id = &alice();
         let proposal_id = 0;
         let action = &format!("{:?}", Action::VoteApprove);
-        Event::ActionCancel { proposer_id, proposal_id, action }.emit();
+        Event::ActionCancel { voter_id, proposal_id, action }.emit();
         assert_eq!(
             test_utils::get_logs()[0],
-            r#"EVENT_JSON:{"standard":"ref-ve","version":"1.0.0","event":"action_cancel","data":[{"proposer_id":"alice","proposal_id":0,"action":"VoteApprove"}]}"#
+            r#"EVENT_JSON:{"standard":"ref-ve","version":"1.0.0","event":"action_cancel","data":[{"voter_id":"alice","proposal_id":0,"action":"VoteApprove"}]}"#
         );
     }
 
     #[test]
     fn event_lpt_withdraw() {
-        let proposer_id = &alice();
+        let caller_id = &alice();
         let withdraw_amount = &U128(100);
         let success = true;
-        Event::LptWithdraw { proposer_id, withdraw_amount, success }.emit();
+        Event::LptWithdraw { caller_id, withdraw_amount, success }.emit();
         assert_eq!(
             test_utils::get_logs()[0],
-            r#"EVENT_JSON:{"standard":"ref-ve","version":"1.0.0","event":"lpt_withdraw","data":[{"proposer_id":"alice","withdraw_amount":"100","success":true}]}"#
+            r#"EVENT_JSON:{"standard":"ref-ve","version":"1.0.0","event":"lpt_withdraw","data":[{"caller_id":"alice","withdraw_amount":"100","success":true}]}"#
         );
     }
 
     #[test]
     fn event_lpt_withdraw_lostfound() {
-        let proposer_id = &alice();
+        let caller_id = &alice();
         let withdraw_amount = &U128(100);
         let success = true;
-        Event::LptWithdrawLostfound { proposer_id, withdraw_amount, success }.emit();
+        Event::LptWithdrawLostfound { caller_id, withdraw_amount, success }.emit();
         assert_eq!(
             test_utils::get_logs()[0],
-            r#"EVENT_JSON:{"standard":"ref-ve","version":"1.0.0","event":"lpt_withdraw_lostfound","data":[{"proposer_id":"alice","withdraw_amount":"100","success":true}]}"#
+            r#"EVENT_JSON:{"standard":"ref-ve","version":"1.0.0","event":"lpt_withdraw_lostfound","data":[{"caller_id":"alice","withdraw_amount":"100","success":true}]}"#
         );
     }
 
     #[test]
     fn event_reward_withdraw() {
-        let proposer_id = &alice();
+        let caller_id = &alice();
         let token_id = &token_id();
         let withdraw_amount = &U128(100);
         let success = true;
-        Event::RewardWithdraw { proposer_id, token_id, withdraw_amount, success }.emit();
+        Event::RewardWithdraw { caller_id, token_id, withdraw_amount, success }.emit();
         assert_eq!(
             test_utils::get_logs()[0],
-            r#"EVENT_JSON:{"standard":"ref-ve","version":"1.0.0","event":"reward_withdraw","data":[{"proposer_id":"alice","token_id":"ref","withdraw_amount":"100","success":true}]}"#
+            r#"EVENT_JSON:{"standard":"ref-ve","version":"1.0.0","event":"reward_withdraw","data":[{"caller_id":"alice","token_id":"ref","withdraw_amount":"100","success":true}]}"#
         );
     }
 
@@ -229,10 +214,10 @@ mod tests {
         let deposit_amount = &U128(100);
         let increased_ve_lpt = &U128(200);
         let duration = 1000000;
-        Event::LptDeposit { caller_id, deposit_amount, increased_ve_lpt, duration }.emit();
+        Event::LptLock { caller_id, deposit_amount, increased_ve_lpt, duration }.emit();
         assert_eq!(
             test_utils::get_logs()[0],
-            r#"EVENT_JSON:{"standard":"ref-ve","version":"1.0.0","event":"lpt_deposit","data":[{"caller_id":"alice","deposit_amount":"100","increased_ve_lpt":"200","duration":1000000}]}"#
+            r#"EVENT_JSON:{"standard":"ref-ve","version":"1.0.0","event":"lpt_lock","data":[{"caller_id":"alice","deposit_amount":"100","increased_ve_lpt":"200","duration":1000000}]}"#
         );
     }
 

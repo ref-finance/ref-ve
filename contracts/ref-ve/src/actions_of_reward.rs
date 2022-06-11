@@ -66,7 +66,7 @@ impl Contract {
             PromiseResult::NotReady => unreachable!(),
             PromiseResult::Successful(_) => {
                 Event::RewardWithdraw {
-                    proposer_id: &sender_id,
+                    caller_id: &sender_id,
                     token_id: &token_id,
                     withdraw_amount: &U128(amount),
                     success: true,
@@ -80,7 +80,7 @@ impl Contract {
                 self.internal_set_account(&sender_id, account);
 
                 Event::RewardWithdraw {
-                    proposer_id: &sender_id,
+                    caller_id: &sender_id,
                     token_id: &token_id,
                     withdraw_amount: &U128(amount),
                     success: false,

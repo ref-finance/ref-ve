@@ -113,7 +113,7 @@ impl Contract {
 
         self.internal_set_account(account_id, account);
 
-        Event::LptDeposit {
+        Event::LptLock {
             caller_id: account_id,
             deposit_amount: &U128(amount),
             increased_ve_lpt: &U128(increased_ve_lpt),

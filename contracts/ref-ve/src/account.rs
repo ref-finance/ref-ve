@@ -174,11 +174,11 @@ impl Contract {
 
     pub fn internal_account_vote(
         &mut self,
-        proposer: &AccountId,
+        voter: &AccountId,
         proposal_id: u32,
         action: &Action,
     ) -> Balance {
-        let mut account = self.internal_unwrap_account(proposer);
+        let mut account = self.internal_unwrap_account(voter);
         let ve_lpt_amount = account.ve_lpt_amount;
         require!(ve_lpt_amount > 0, E303_INSUFFICIENT_VE_LPT);
         require!(!account.proposals.contains_key(&proposal_id), E200_ALREADY_VOTED);
@@ -187,20 +187,20 @@ impl Contract {
             amount: ve_lpt_amount,
         });
         self.internal_claim_all(&mut account);
-        self.data_mut().accounts.insert(proposer, &account.into());
+        self.data_mut().accounts.insert(voter, &account.into());
         ve_lpt_amount
     }
 
     pub fn internal_account_cancel_vote(
         &mut self,
-        proposer: &AccountId,
+        voter: &AccountId,
         proposal_id: u32,
     ) -> VoteDetail {
-        let mut account = self.internal_unwrap_account(proposer);
+        let mut account = self.internal_unwrap_account(voter);
         require!(account.proposals.contains_key(&proposal_id), E206_NO_VOTED);
         let action = account.proposals.remove(&proposal_id).unwrap();
         self.internal_claim_all(&mut account);
-        self.data_mut().accounts.insert(proposer, &account.into());
+        self.data_mut().accounts.insert(voter, &account.into());
         action
     }
 }
