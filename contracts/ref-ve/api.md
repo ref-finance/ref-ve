@@ -118,7 +118,8 @@ pub enum ProposalKind {
         total_reward: u32
     },
     Poll {
-        descriptions: Vec<String>,
+        description: String,
+        options: Vec<String>,
     },
     Common {
         description: String,
@@ -148,7 +149,7 @@ near call $VE create_proposal '{"kind": {"Common":{"description":"xxx"}}, "start
 ```
 create poll
 ```bash
-near call $VE create_proposal '{"kind": {"Poll":{"descriptions":["topic1", "topic2"]}}, "start_at": 1654650000, "duration_sec": 5184000 }' --account_id=u1.testnet 
+near call $VE create_proposal '{"kind": {"Poll":{ "description": "Poll Proposal", "options":["topic1", "topic2"]}}, "start_at": 1654650000, "duration_sec": 5184000 }' --account_id=u1.testnet 
 ```
 **Remove Proposal** 
 ```rust
@@ -277,7 +278,7 @@ near view $VE list_proposals
   {
     id: 2,
     proposer: 'user_account_id',
-    kind: { Poll: { descriptions: [ 'topic1', 'topic2' ] } },
+    kind: { Poll: { description: 'xxx', options: [ 'topic1', 'topic2' ] } },
     votes: [ '0', '0' ],
     start_at: '1654650000000000000',
     end_at: '1659834000000000000',

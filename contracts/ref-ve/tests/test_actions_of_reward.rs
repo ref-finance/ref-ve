@@ -15,7 +15,7 @@ fn test_claim_and_withdraw_all() {
 
     e.extend_whitelisted_accounts(&e.owner, vec![users.alice.account_id()]).assert_success();
 
-    e.create_proposal(&users.alice, ProposalKind::Poll { descriptions: vec!["topic1".to_string(), "topic2".to_string()] }, to_sec(e.current_time() + DAY_TS), DEFAULT_MIN_PROPOSAL_VOTING_PERIOD_SEC, 0).assert_success();
+    e.create_proposal(&users.alice, ProposalKind::Poll { description: "Poll Proposal".to_string(), options: vec!["topic1".to_string(), "topic2".to_string()] }, to_sec(e.current_time() + DAY_TS), DEFAULT_MIN_PROPOSAL_VOTING_PERIOD_SEC, 0).assert_success();
     e.skip_time(DAY_SEC);
     e.action_proposal(&users.alice, 0, Action::VotePoll { poll_id: 0 }, None).assert_success();
     e.ft_mint(&tokens.nref, &users.alice, to_yocto("100"));
@@ -70,10 +70,10 @@ fn test_claim_reward() {
     e.extend_whitelisted_accounts(&e.owner, vec![users.dude.account_id()]).assert_success();
     e.storage_deposit(&users.dude, &users.dude, to_yocto("1"));
 
-    e.create_proposal(&users.dude, ProposalKind::Poll { descriptions: vec!["topic1".to_string(), "topic2".to_string()] }, to_sec(e.current_time() + DAY_TS), DEFAULT_MIN_PROPOSAL_VOTING_PERIOD_SEC, 0).assert_success();
-    e.create_proposal(&users.dude, ProposalKind::Poll { descriptions: vec!["topic11".to_string(), "topic22".to_string()] }, to_sec(e.current_time() + DAY_TS), DEFAULT_MIN_PROPOSAL_VOTING_PERIOD_SEC, 0).assert_success();
-    e.create_proposal(&users.dude, ProposalKind::Poll { descriptions: vec!["topic111".to_string(), "topic222".to_string()] }, to_sec(e.current_time() + DAY_TS), DEFAULT_MIN_PROPOSAL_VOTING_PERIOD_SEC, 0).assert_success();
-    e.create_proposal(&users.dude, ProposalKind::Poll { descriptions: vec!["topic111".to_string(), "topic222".to_string()] }, to_sec(e.current_time() + DAY_TS), DEFAULT_MIN_PROPOSAL_VOTING_PERIOD_SEC, 0).assert_success();
+    e.create_proposal(&users.dude, ProposalKind::Poll { description: "Poll Proposal".to_string(), options: vec!["topic1".to_string(), "topic2".to_string()] }, to_sec(e.current_time() + DAY_TS), DEFAULT_MIN_PROPOSAL_VOTING_PERIOD_SEC, 0).assert_success();
+    e.create_proposal(&users.dude, ProposalKind::Poll { description: "Poll Proposal".to_string(), options: vec!["topic11".to_string(), "topic22".to_string()] }, to_sec(e.current_time() + DAY_TS), DEFAULT_MIN_PROPOSAL_VOTING_PERIOD_SEC, 0).assert_success();
+    e.create_proposal(&users.dude, ProposalKind::Poll { description: "Poll Proposal".to_string(), options: vec!["topic111".to_string(), "topic222".to_string()] }, to_sec(e.current_time() + DAY_TS), DEFAULT_MIN_PROPOSAL_VOTING_PERIOD_SEC, 0).assert_success();
+    e.create_proposal(&users.dude, ProposalKind::Poll { description: "Poll Proposal".to_string(), options: vec!["topic111".to_string(), "topic222".to_string()] }, to_sec(e.current_time() + DAY_TS), DEFAULT_MIN_PROPOSAL_VOTING_PERIOD_SEC, 0).assert_success();
     e.skip_time(DAY_SEC);
     e.action_proposal(&users.alice, 0, Action::VotePoll { poll_id: 0 }, None).assert_success();
     e.action_proposal(&users.alice, 1, Action::VotePoll { poll_id: 0 }, None).assert_success();
@@ -141,7 +141,7 @@ fn test_withdraw_reward() {
     e.extend_whitelisted_accounts(&e.owner, vec![users.dude.account_id()]).assert_success();
     e.storage_deposit(&users.dude, &users.dude, to_yocto("1"));
 
-    e.create_proposal(&users.dude, ProposalKind::Poll { descriptions: vec!["topic1".to_string(), "topic2".to_string()] }, to_sec(e.current_time() + DAY_TS), DEFAULT_MIN_PROPOSAL_VOTING_PERIOD_SEC, 0).assert_success();
+    e.create_proposal(&users.dude, ProposalKind::Poll { description: "Poll Proposal".to_string(), options: vec!["topic1".to_string(), "topic2".to_string()] }, to_sec(e.current_time() + DAY_TS), DEFAULT_MIN_PROPOSAL_VOTING_PERIOD_SEC, 0).assert_success();
     e.skip_time(DAY_SEC);
     e.action_proposal(&users.alice, 0, Action::VotePoll { poll_id: 0 }, None).assert_success();
     e.ft_mint(&tokens.nref, &users.alice, to_yocto("100"));

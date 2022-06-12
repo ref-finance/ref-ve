@@ -25,12 +25,12 @@ fn test_create_proposal(){
 
     // 3 : E402_INVALID_START_TIME 
     assert_err!(e.create_proposal(&users.alice, ProposalKind::FarmingReward { farm_list: vec![], total_reward: 2 }, to_sec(e.current_time()), 1000, 0), E402_INVALID_START_TIME);
-    assert_err!(e.create_proposal(&users.alice, ProposalKind::Poll { descriptions: vec![] }, to_sec(e.current_time()), 1000, 0), E402_INVALID_START_TIME);
+    assert_err!(e.create_proposal(&users.alice, ProposalKind::Poll { description: "Poll Proposal".to_string(), options: vec![] }, to_sec(e.current_time()), 1000, 0), E402_INVALID_START_TIME);
     assert_err!(e.create_proposal(&users.alice, ProposalKind::Common { description: "Common Proposal".to_string() }, to_sec(e.current_time()), 1000, to_yocto("1")), E402_INVALID_START_TIME);
 
     let mut before = e.get_metadata();
     e.create_proposal(&users.alice, ProposalKind::FarmingReward { farm_list: vec![], total_reward: 2 }, to_sec(e.current_time() + DAY_TS), 1000, 0).assert_success();
-    e.create_proposal(&users.alice, ProposalKind::Poll { descriptions: vec![] }, to_sec(e.current_time() + DAY_TS), 1000, 0).assert_success();
+    e.create_proposal(&users.alice, ProposalKind::Poll { description: "Poll Proposal".to_string(), options: vec![] }, to_sec(e.current_time() + DAY_TS), 1000, 0).assert_success();
     e.create_proposal(&users.alice, ProposalKind::Common { description: "Common Proposal".to_string() }, to_sec(e.current_time() + DAY_TS), DEFAULT_MIN_PROPOSAL_VOTING_PERIOD_SEC, to_yocto("1")).assert_success();
     before.proposal_count = 3.into();
     assert_eq!(format!("{:?}", before), format!("{:?}", e.get_metadata()));
@@ -78,7 +78,7 @@ fn test_action_proposal(){
     e.extend_whitelisted_accounts(&e.owner, vec![users.bob.account_id()]).assert_success();
     
     e.create_proposal(&users.bob, ProposalKind::FarmingReward { farm_list: vec!["ref<>celo".to_string(), "usn<>usdt".to_string()], total_reward: 2 }, to_sec(e.current_time() + DAY_TS), 1000, 0).assert_success();
-    e.create_proposal(&users.bob, ProposalKind::Poll { descriptions: vec!["topic1".to_string(), "topic2".to_string()] }, to_sec(e.current_time() + DAY_TS), 1000, 0).assert_success();
+    e.create_proposal(&users.bob, ProposalKind::Poll { description: "Poll Proposal".to_string(), options: vec!["topic1".to_string(), "topic2".to_string()] }, to_sec(e.current_time() + DAY_TS), 1000, 0).assert_success();
     e.create_proposal(&users.bob, ProposalKind::Common { description: "Common Proposal".to_string() }, to_sec(e.current_time() + DAY_TS), DEFAULT_MIN_PROPOSAL_VOTING_PERIOD_SEC, to_yocto("1")).assert_success();
 
     // error scene 
@@ -315,7 +315,7 @@ fn test_action_cancel(){
     e.extend_whitelisted_accounts(&e.owner, vec![users.bob.account_id()]).assert_success();
 
     e.create_proposal(&users.bob, ProposalKind::FarmingReward { farm_list: vec!["ref<>celo".to_string(), "usn<>usdt".to_string()], total_reward: 2 }, to_sec(e.current_time() + DAY_TS), 1000, 0).assert_success();
-    e.create_proposal(&users.bob, ProposalKind::Poll { descriptions: vec!["topic1".to_string(), "topic2".to_string()] }, to_sec(e.current_time() + DAY_TS), 1000, 0).assert_success();
+    e.create_proposal(&users.bob, ProposalKind::Poll { description: "Poll Proposal".to_string(), options: vec!["topic1".to_string(), "topic2".to_string()] }, to_sec(e.current_time() + DAY_TS), 1000, 0).assert_success();
     e.create_proposal(&users.bob, ProposalKind::Common { description: "Common Proposal".to_string() }, to_sec(e.current_time() + DAY_TS), DEFAULT_MIN_PROPOSAL_VOTING_PERIOD_SEC, to_yocto("1")).assert_success();
 
     e.skip_time(DAY_SEC);

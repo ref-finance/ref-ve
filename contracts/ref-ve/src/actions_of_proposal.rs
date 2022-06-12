@@ -22,8 +22,8 @@ impl Contract {
             ProposalKind::FarmingReward{ farm_list, .. } => {
                 vec![0; farm_list.len()]
             },
-            ProposalKind::Poll{ descriptions } => {
-                vec![0; descriptions.len()]
+            ProposalKind::Poll{ options, .. } => {
+                vec![0; options.len()]
             },
             ProposalKind::Common{ .. } => {
                 vec![0; 4]

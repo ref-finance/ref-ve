@@ -8,7 +8,8 @@ pub enum ProposalKind {
         total_reward: u32
     },
     Poll {
-        descriptions: Vec<String>,
+        description: String,
+        options: Vec<String>,
     },
     Common {
         description: String,

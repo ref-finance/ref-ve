@@ -58,7 +58,7 @@ fn test_deposit_reward() {
 
     e.create_proposal(&users.dude, ProposalKind::FarmingReward { farm_list: vec!["ref<>celo".to_string(), "usn<>usdt".to_string()], total_reward: 20000 }, to_sec(e.current_time() + DAY_TS), 1000, 0).assert_success();//, Some((tokens.nref.account_id(), IncentiveType::Evenly))
     e.create_proposal(&users.dude, ProposalKind::Common { description: "common".to_string() }, to_sec(e.current_time() + DAY_TS), DEFAULT_MIN_PROPOSAL_VOTING_PERIOD_SEC, 0).assert_success();
-    e.create_proposal(&users.dude, ProposalKind::Poll { descriptions: vec!["topic1".to_string(), "topic2".to_string()] }, to_sec(e.current_time() + DAY_TS), DEFAULT_MIN_PROPOSAL_VOTING_PERIOD_SEC, 0).assert_success();
+    e.create_proposal(&users.dude, ProposalKind::Poll { description: "Poll Proposal".to_string(), options: vec!["topic1".to_string(), "topic2".to_string()] }, to_sec(e.current_time() + DAY_TS), DEFAULT_MIN_PROPOSAL_VOTING_PERIOD_SEC, 0).assert_success();
     e.skip_time(DAY_SEC);
     e.action_proposal(&users.alice, 2, Action::VotePoll { poll_id: 0 }, None).assert_success();
     e.ft_mint(&tokens.nref, &users.alice, to_yocto("200"));
