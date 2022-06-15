@@ -102,7 +102,7 @@ impl Account {
 
         if self.unlock_timestamp > 0 && self.unlock_timestamp > timestamp {
             // exist lpt locked need relock
-            require!(self.unlock_timestamp <= new_unlock_timestamp, E304_CAUSE_PRE_UNLOCK);
+            require!(nano_to_sec(self.unlock_timestamp) <= nano_to_sec(new_unlock_timestamp), E304_CAUSE_PRE_UNLOCK);
             let relocked_ve = compute_ve_lpt_amount(config, self.lpt_amount, duration_sec, lptoken_decimals);
             self.ve_lpt_amount = std::cmp::max(self.ve_lpt_amount, relocked_ve);
             let extra_x = compute_ve_lpt_amount(config, amount, duration_sec, lptoken_decimals);

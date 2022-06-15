@@ -35,6 +35,7 @@ fn test_lock_lpt(){
     assert_eq!(format!("{:?}", before), format!("{:?}", e.get_metadata()));
 
     // append
+    e.near.borrow_runtime_mut().cur_block.block_timestamp += 111;
     let mut before = e.get_metadata();
     assert_eq!("10", e.append_lpt(&users.alice, to_yocto("100") + 10, 0).unwrap_json_value());
     before.cur_total_ve_lpt = to_ve_token("600").into();

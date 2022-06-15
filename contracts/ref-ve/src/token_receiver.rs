@@ -131,7 +131,7 @@ impl Contract {
         let mut account = self.internal_unwrap_or_default_account(account_id);
         require!(account.unlock_timestamp != 0, E105_ACC_NOT_LOCKED);
         let timestamp = env::block_timestamp();
-        let duration_sec = nano_to_sec(account.unlock_timestamp - timestamp) + append_duration_sec;
+        let duration_sec = nano_to_sec(account.unlock_timestamp) - nano_to_sec(timestamp) + append_duration_sec;
 
         let config = self.internal_config();
         require!(duration_sec >= config.min_locking_duration_sec, E302_INVALID_DURATION);

@@ -172,8 +172,8 @@ near call $VE action_proposal '{"proposal_id":1, "action": {"VotePoll": {"poll_i
 ```
 voting common
 ```bash
-near call $VE action_proposal '{"proposal_id":1, "action": "VoteApprove"' --account_id=u1.testnet
-near call $VE action_proposal '{"proposal_id":1, "action": "VoteReject"' --account_id=u1.testnet
+near call $VE action_proposal '{"proposal_id":1, "action": "VoteApprove"}' --account_id=u1.testnet
+near call $VE action_proposal '{"proposal_id":1, "action": "VoteReject"}' --account_id=u1.testnet
 ```
 **Action Cancel**
 ```rust
@@ -351,6 +351,10 @@ near view $VE get_vote_detail_history '{"account_id": "xxx"}'
   },
   '9': {
     action: { VotePoll: { poll_id: 0 } },
+    amount: '200000000000000000000'
+  },
+  { '10': { 
+    action: 'VoteApprove', 
     amount: '200000000000000000000'
   }
 }
