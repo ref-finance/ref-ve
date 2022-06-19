@@ -67,4 +67,11 @@ impl Env {
             self.ve_contract.contract.get_unclaimed_rewards(user.account_id())
         ).unwrap_json::<HashMap<AccountId, U128>>()
     }
+
+    pub fn list_removed_proposal_asserts(&self) -> HashMap<AccountId, U128> {
+        self.owner
+        .view_method_call(
+            self.ve_contract.contract.list_removed_proposal_asserts(None, None)
+        ).unwrap_json::<HashMap<AccountId, U128>>()
+    }
 }

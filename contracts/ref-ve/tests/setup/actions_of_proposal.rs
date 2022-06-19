@@ -6,6 +6,7 @@ impl Env {
         &self,
         operator: &UserAccount,
         kind: ProposalKind,
+        description: String,
         start_at: u32,
         duration_sec: u32,
         deposit: Balance
@@ -13,7 +14,7 @@ impl Env {
         operator
             .function_call(
                 self.ve_contract.contract.create_proposal(
-                    kind, start_at, duration_sec
+                    kind, description, start_at, duration_sec
                 ),
                 MAX_GAS.0,
                 deposit,

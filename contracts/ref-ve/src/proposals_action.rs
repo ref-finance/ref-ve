@@ -16,27 +16,21 @@ pub enum Action {
 }
 
 impl Action {
-    pub fn get_farm_id(&self) -> usize {
+
+    pub fn get_index(&self) -> usize {
         match self {
             Action::VoteFarm { farm_id } => {
                 *farm_id
             },
-            _ => {
-                env::panic_str(E201_INVALID_VOTE)
-            }
-        }
-
-    }
-    pub fn get_poll_id(&self) -> usize {
-        match self {
             Action::VotePoll { poll_id } => {
                 *poll_id
             },
-            _ => {
-                env::panic_str(E201_INVALID_VOTE)
-            }
+            Action::VoteApprove => Vote::Approve as usize,
+            Action::VoteReject => Vote::Reject as usize,
+            Action::VoteNonsense => Vote::Nonsense as usize,
         }
     }
+    
 }
 
 /// Votes recorded in the proposal.
@@ -69,33 +63,33 @@ impl Proposal {
         total: Balance,
         is_increased: bool
     ) {
-        match self.kind {
-            ProposalKind::FarmingReward { .. } => {
-                let farm_id = action.get_farm_id();
-                require!(farm_id < self.votes.len(), E201_INVALID_VOTE);
+        let index = action.get_index();
+        match &self.kind {
+            ProposalKind::FarmingReward { farm_list, .. } => {
+                require!(index < farm_list.len(), E201_INVALID_VOTE);
                 if is_increased {
-                    self.votes[farm_id] += amount;
+                    self.votes[index].total_ballots += amount;
                 } else {
-                    self.votes[farm_id] -= amount;
+                    self.votes[index].total_ballots -= amount;
                 }
+                self.votes[farm_list.len()].total_ballots = total;
             },
-            ProposalKind::Poll { .. } => {
-                let poll_id = action.get_poll_id();
-                require!(poll_id < self.votes.len(), E201_INVALID_VOTE);
+            ProposalKind::Poll { options } => {
+                require!(index < options.len(), E201_INVALID_VOTE);
                 if is_increased {
-                    self.votes[poll_id] += amount;
+                    self.votes[index].total_ballots += amount;
                 } else {
-                    self.votes[poll_id] -= amount;
+                    self.votes[index].total_ballots -= amount;
                 }
+                self.votes[options.len()].total_ballots = total;
             },
             ProposalKind::Common { .. } => {
-                let vote: Vote = action.into();
                 if is_increased {
-                    self.votes[vote as usize] += amount;
+                    self.votes[index].total_ballots += amount;
                 } else {
-                    self.votes[vote as usize] -= amount;
+                    self.votes[index].total_ballots -= amount;
                 }
-                self.votes[3] = total;
+                self.votes[3].total_ballots = total;
             }
         }
     }
@@ -121,6 +115,7 @@ impl Contract {
                     self.data().cur_total_ve_lpt,
                     true
                 );
+                proposal.votes[action.get_index()].participants += 1;
                 proposal.participants += 1;
                 
                 self.data_mut()
@@ -149,6 +144,7 @@ impl Contract {
                     self.data().cur_total_ve_lpt,
                     false
                 );
+                proposal.votes[action.get_index()].participants -= 1;
                 proposal.participants -= 1;
                 
                 self.data_mut()

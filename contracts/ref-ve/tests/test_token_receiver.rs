@@ -57,26 +57,31 @@ fn test_deposit_reward() {
     e.extend_whitelisted_accounts(&e.owner, vec![users.dude.account_id()]).assert_success();
     e.storage_deposit(&users.dude, &users.dude, to_yocto("1"));
 
-    e.create_proposal(&users.dude, ProposalKind::FarmingReward { farm_list: vec!["ref<>celo".to_string(), "usn<>usdt".to_string()], total_reward: 20000 }, to_sec(e.current_time() + DAY_TS), 1000, 0).assert_success();//, Some((tokens.nref.account_id(), IncentiveType::Evenly))
-    e.create_proposal(&users.dude, ProposalKind::Common { description: "common".to_string() }, to_sec(e.current_time() + DAY_TS), DEFAULT_MIN_PROPOSAL_VOTING_PERIOD_SEC, 0).assert_success();
-    e.create_proposal(&users.dude, ProposalKind::Poll { description: "Poll Proposal".to_string(), options: vec!["topic1".to_string(), "topic2".to_string()] }, to_sec(e.current_time() + DAY_TS), DEFAULT_MIN_PROPOSAL_VOTING_PERIOD_SEC, 0).assert_success();
+    e.create_proposal(&users.dude, ProposalKind::FarmingReward { farm_list: vec!["ref<>celo".to_string(), "usn<>usdt".to_string()], total_reward: 20000 }, "FarmingReward".to_string(), to_sec(e.current_time() + DAY_TS), 1000, 0).assert_success();//, Some((tokens.nref.account_id(), IncentiveType::Evenly))
+    e.create_proposal(&users.dude, ProposalKind::Common, "Common".to_string(), to_sec(e.current_time() + DAY_TS), DEFAULT_MIN_PROPOSAL_VOTING_PERIOD_SEC, 0).assert_success();
+    e.create_proposal(&users.dude, ProposalKind::Poll { options: vec!["topic1".to_string(), "topic2".to_string()] }, "Poll".to_string(), to_sec(e.current_time() + DAY_TS), DEFAULT_MIN_PROPOSAL_VOTING_PERIOD_SEC, 0).assert_success();
     e.skip_time(DAY_SEC);
     e.action_proposal(&users.alice, 2, Action::VotePoll { poll_id: 0 }, None).assert_success();
-    e.ft_mint(&tokens.nref, &users.alice, to_yocto("200"));
-    e.ft_mint(&tokens.wnear, &users.alice, to_yocto("200"));
+    e.ft_mint(&tokens.nref, &users.alice, to_yocto("2000"));
+    e.ft_mint(&tokens.wnear, &users.alice, to_yocto("2000"));
 
     // 1 : E405_PROPOSAL_NOT_SUPPORT_INCENTIVE
-    assert_err!(e.deposit_reward(&tokens.nref, &users.alice, to_yocto("100"), 0), E405_PROPOSAL_NOT_SUPPORT_INCENTIVE);
-    assert_err!(e.deposit_reward(&tokens.nref, &users.alice, to_yocto("100"), 1), E405_PROPOSAL_NOT_SUPPORT_INCENTIVE);
+    assert_err!(e.deposit_reward(&tokens.nref, &users.alice, to_yocto("100"), 1, 0, "Proportion".to_string()), E405_PROPOSAL_NOT_SUPPORT_INCENTIVE);
+
+    // 2 : E207_INVALID_INCENTIVE_KEY
+    assert_err!(e.deposit_reward(&tokens.nref, &users.alice, to_yocto("100"), 0, 5, "Proportion".to_string()), E207_INVALID_INCENTIVE_KEY);
+    assert_err!(e.deposit_reward(&tokens.nref, &users.alice, to_yocto("100"), 2, 1, "Proportion".to_string()), E207_INVALID_INCENTIVE_KEY);
 
     // success 
-    e.deposit_reward(&tokens.nref, &users.alice, to_yocto("100"), 2).assert_success();
-    assert_eq!(e.get_proposal(2).unwrap().incentive.unwrap().incentive_amount, to_yocto("100"));
+    e.deposit_reward(&tokens.nref, &users.alice, to_yocto("100"), 0, 0, "Proportion".to_string()).assert_success();
+    e.deposit_reward(&tokens.nref, &users.alice, to_yocto("100"), 0, 1, "Proportion".to_string()).assert_success();
+    e.deposit_reward(&tokens.nref, &users.alice, to_yocto("100"), 2, 0, "Proportion".to_string()).assert_success();
+    assert_eq!(e.get_proposal(2).unwrap().incentive.get(&0).unwrap().incentive_amount, to_yocto("100"));
 
-    // 2 : E203_INVALID_INCENTIVE_TOKEN
-    assert_err!(e.deposit_reward(&tokens.wnear, &users.alice, to_yocto("100"), 2), E203_INVALID_INCENTIVE_TOKEN);
+    // 3 : E203_INVALID_INCENTIVE_TOKEN
+    assert_err!(e.deposit_reward(&tokens.wnear, &users.alice, to_yocto("100"), 2, 0, "Proportion".to_string()), E203_INVALID_INCENTIVE_TOKEN);
 
-    // 3 : E406_EXPIRED_PROPOSAL
+    // 4 : E406_EXPIRED_PROPOSAL
     e.skip_time(DEFAULT_MIN_PROPOSAL_VOTING_PERIOD_SEC);
-    assert_err!(e.deposit_reward(&tokens.nref, &users.alice, to_yocto("100"), 2), E406_EXPIRED_PROPOSAL);
+    assert_err!(e.deposit_reward(&tokens.nref, &users.alice, to_yocto("100"), 2, 0, "Proportion".to_string()), E406_EXPIRED_PROPOSAL);
 }

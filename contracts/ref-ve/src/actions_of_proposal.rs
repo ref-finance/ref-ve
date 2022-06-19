@@ -6,6 +6,7 @@ impl Contract {
     pub fn create_proposal(
         &mut self,
         kind: ProposalKind,
+        description: String,
         start_at: u32,
         duration_sec: u32,
     ) -> u32 {
@@ -18,25 +19,26 @@ impl Contract {
 
         require!(start_at - nano_to_sec(env::block_timestamp()) >= config.min_proposal_start_vote_offset_sec, E402_INVALID_START_TIME);
 
-        let votes = match &kind {
+        let votes: Vec<VoteInfo> = match &kind {
             ProposalKind::FarmingReward{ farm_list, .. } => {
-                vec![0; farm_list.len()]
+                vec![Default::default(); farm_list.len() + 1]
             },
             ProposalKind::Poll{ options, .. } => {
-                vec![0; options.len()]
+                vec![Default::default(); options.len() + 1]
             },
             ProposalKind::Common{ .. } => {
-                vec![0; 4]
+                vec![Default::default(); 4]
             }
         };
 
         let id = self.data().last_proposal_id;
         let proposal = Proposal{
             id,
+            description,
             proposer: proposer.clone(),
             kind: kind.clone(),
             votes,
-            incentive: None,
+            incentive: HashMap::new(),
             start_at: to_nano(start_at),
             end_at: to_nano(start_at + duration_sec),
             participants: 0,
@@ -70,6 +72,14 @@ impl Contract {
         match proposal.status.unwrap() {
             ProposalStatus::WarmUp => {
                 self.data_mut().proposals.remove(&proposal_id);
+
+                for item in proposal.incentive.values() {
+                    let current_amount = self.data().removed_proposal_asserts.get(&item.incentive_token_id).unwrap_or(0_u128);
+                    self.data_mut().removed_proposal_asserts.insert(
+                        &item.incentive_token_id,
+                        &(item.incentive_amount + current_amount),
+                    );
+                }
 
                 Event::ProposalRemove {
                     proposer_id: &proposer,

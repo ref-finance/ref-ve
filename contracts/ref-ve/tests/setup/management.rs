@@ -76,4 +76,19 @@ impl Env {
                 1,
             )
     }
+
+    pub fn return_removed_proposal_asserts(
+        &self,
+        operator: &UserAccount,
+        account: &UserAccount, token: &UserAccount, amount: u128
+    ) -> ExecutionResult {
+        operator
+            .function_call(
+                self.ve_contract.contract.return_removed_proposal_asserts(
+                    account.account_id(), token.account_id(), amount.into()
+                ),
+                MAX_GAS.0,
+                1,
+            )
+    }
 }

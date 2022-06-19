@@ -59,6 +59,7 @@ pub(crate) enum StorageKeys {
     WhitelistedAccounts,
     Proposals,
     AccountProposalHistory { account_id: AccountId },
+    RemovedProposalAsserts
 }
 
 /// Contract config
@@ -128,6 +129,8 @@ pub struct ContractData {
 
     // if withdraw lpt encounter error, the lpt would go to here
     pub lostfound: Balance,
+
+    pub removed_proposal_asserts: UnorderedMap<AccountId, Balance>
 }
 
 /// Versioned contract data. Allows to easily upgrade contracts.
@@ -166,6 +169,7 @@ impl Contract {
                 cur_total_ve_lpt: 0,
                 cur_lock_lpt: 0,
                 lostfound: 0,
+                removed_proposal_asserts: UnorderedMap::new(StorageKeys::RemovedProposalAsserts),
             }),
         }
     }

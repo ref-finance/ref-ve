@@ -8,12 +8,9 @@ pub enum ProposalKind {
         total_reward: u32
     },
     Poll {
-        description: String,
         options: Vec<String>,
     },
-    Common {
-        description: String,
-    },
+    Common,
 }
 
 #[derive(BorshSerialize, BorshDeserialize, Serialize, Clone, PartialEq)]
@@ -36,17 +33,35 @@ pub struct FarmingReward {
 }
 
 #[derive(BorshSerialize, BorshDeserialize, Serialize, Clone)]
+#[cfg_attr(not(target_arch = "wasm32"), derive(Debug, Deserialize, PartialEq))]
+#[serde(crate = "near_sdk::serde")]
+pub struct VoteInfo {
+    #[serde(with = "u128_dec_format")]
+    pub total_ballots: u128,
+    pub participants: u64,
+}
+
+impl Default for VoteInfo {
+    fn default() -> Self {
+        VoteInfo {
+            total_ballots: 0,
+            participants: 0,
+        }
+    }
+}
+
+#[derive(BorshSerialize, BorshDeserialize, Serialize, Clone)]
 #[cfg_attr(not(target_arch = "wasm32"), derive(Debug, Deserialize))]
 #[serde(crate = "near_sdk::serde")]
 pub struct Proposal {
     pub id: u32,
+    pub description: String,
     /// Original proposer.
     pub proposer: AccountId,
     /// Kind of proposal with relevant information.
     pub kind: ProposalKind,
     /// Result of proposal with relevant information.
-    #[serde(with = "u128_vec_format")]
-    pub votes: Vec<u128>,
+    pub votes: Vec<VoteInfo>,
     /// the nano seconds of voting begin time,
     /// before this time, proposer can remove this immediately.
     #[serde(with = "u64_dec_format")]
@@ -59,7 +74,7 @@ pub struct Proposal {
     pub participants: u64,
 
     /// Incentive of proposal with relevant information.   
-    pub incentive: Option<ProposalIncentive>,
+    pub incentive: HashMap<u32, ProposalIncentive>,
     #[borsh_skip]
     pub status: Option<ProposalStatus>,
     #[borsh_skip] 
@@ -89,7 +104,7 @@ impl Proposal {
 
     pub fn update_result(&mut self){
         if let ProposalKind::Common { .. } = &self.kind {
-            if self.votes[0] + self.votes[1] < self.votes[2] {
+            if self.votes[0].total_ballots + self.votes[1].total_ballots < self.votes[2].total_ballots {
                 self.is_nonsense = Some(true);
             } else {
                 self.is_nonsense = Some(false);
