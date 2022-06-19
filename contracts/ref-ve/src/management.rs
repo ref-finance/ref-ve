@@ -72,7 +72,7 @@ impl Contract {
         require!(amount.0 <= max_amount, E101_INSUFFICIENT_BALANCE);
         self.data_mut().removed_proposal_assets.insert(&token_id, &(max_amount - amount.0));
 
-        self.transfer_removed_proposal_asserts(&token_id, &account_id, amount.0)
+        self.transfer_removed_proposal_assets(&token_id, &account_id, amount.0)
     }
 
     #[private]
@@ -107,10 +107,10 @@ impl Contract {
     }
 
     #[private]
-    pub fn callback_removed_proposal_asserts(
+    pub fn callback_removed_proposal_assets(
         &mut self,
         token_id: AccountId,
-        receive_id: AccountId,
+        receiver_id: AccountId,
         amount: U128,
     ) {
         require!(
@@ -122,7 +122,7 @@ impl Contract {
             PromiseResult::NotReady => unreachable!(),
             PromiseResult::Successful(_) => {
                 Event::RemovedProposalAssets {
-                    receive_id: &receive_id,
+                    receive_id: &receiver_id,
                     token_id: &token_id,
                     amount: &U128(amount),
                     success: true,
@@ -138,7 +138,7 @@ impl Contract {
                 );
 
                 Event::RemovedProposalAssets {
-                    receive_id: &receive_id,
+                    receive_id: &receiver_id,
                     token_id: &token_id,
                     amount: &U128(amount),
                     success: false,
@@ -169,22 +169,22 @@ impl Contract {
         ))
     }
 
-    fn transfer_removed_proposal_asserts(&mut self, token_id: &AccountId, account_id: &AccountId, amount: Balance) -> Promise {
+    fn transfer_removed_proposal_assets(&mut self, token_id: &AccountId, account_id: &AccountId, amount: Balance) -> Promise {
         ext_fungible_token::ft_transfer(
             account_id.clone(),
             amount.into(),
             None,
             token_id.clone(),
             1,
-            GAS_FOR_REMOVED_PROPOSAL_ASSERTS,
+            GAS_FOR_REMOVED_PROPOSAL_ASSETS,
         )
-        .then(ext_self::callback_removed_proposal_asserts(
+        .then(ext_self::callback_removed_proposal_assets(
             token_id.clone(),
             account_id.clone(),
             amount.into(),
             env::current_account_id(),
             0,
-            GAS_FOR_REMOVED_PROPOSAL_ASSERTS,
+            GAS_FOR_RESOLVE_REMOVED_PROPOSAL_ASSETS,
         ))
     }
 }

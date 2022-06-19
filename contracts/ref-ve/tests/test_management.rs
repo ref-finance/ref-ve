@@ -58,7 +58,7 @@ fn test_return_lpt_lostfound(){
 }
 
 #[test]
-fn test_return_removed_proposal_asserts(){
+fn test_return_removed_proposal_assets(){
     let e = init_env();
     let users = Users::init(&e);
     let tokens = Tokens::init(&e);

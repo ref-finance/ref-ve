@@ -22,7 +22,8 @@ pub const GAS_FOR_LPT_TRANSFER: Gas = Gas(20 * TGAS);
 pub const GAS_FOR_RESOLVE_LPT_TRANSFER: Gas = Gas(10 * TGAS);
 pub const GAS_FOR_REWARD_TRANSFER: Gas = Gas(20 * TGAS);
 pub const GAS_FOR_RESOLVE_REWARD_TRANSFER: Gas = Gas(10 * TGAS);
-pub const GAS_FOR_REMOVED_PROPOSAL_ASSERTS: Gas = Gas(10 * TGAS);
+pub const GAS_FOR_REMOVED_PROPOSAL_ASSETS: Gas = Gas(20 * TGAS);
+pub const GAS_FOR_RESOLVE_REMOVED_PROPOSAL_ASSETS: Gas = Gas(10 * TGAS);
 
 pub const STORAGE_BALANCE_MIN_BOUND: u128 = 1_250_000_000_000_000_000_000;
 
@@ -160,8 +161,8 @@ pub trait TokenPostActions {
         &mut self, token_id: AccountId, sender_id: AccountId, amount: U128,
     );
 
-    fn callback_removed_proposal_asserts(
-        &mut self, token_id: AccountId, receive_id: AccountId, amount: U128,
+    fn callback_removed_proposal_assets(
+        &mut self, token_id: AccountId, receiver_id: AccountId, amount: U128,
     );
 
     fn callback_withdraw_lpt(&mut self, sender_id: AccountId, amount: U128);

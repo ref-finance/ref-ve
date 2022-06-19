@@ -139,7 +139,7 @@ mod tests {
     }
 
     #[test]
-    fn event_removed_proposal_asserts() {
+    fn event_removed_proposal_assets() {
         let receive_id = &alice();
         let token_id = &token_id();
         let amount = &U128(100);
