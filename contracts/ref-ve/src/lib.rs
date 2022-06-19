@@ -59,7 +59,7 @@ pub(crate) enum StorageKeys {
     WhitelistedAccounts,
     Proposals,
     AccountProposalHistory { account_id: AccountId },
-    RemovedProposalAsserts
+    RemovedProposalAssets
 }
 
 /// Contract config
@@ -169,7 +169,7 @@ impl Contract {
                 cur_total_ve_lpt: 0,
                 cur_lock_lpt: 0,
                 lostfound: 0,
-                removed_proposal_assets: UnorderedMap::new(StorageKeys::RemovedProposalAsserts),
+                removed_proposal_assets: UnorderedMap::new(StorageKeys::RemovedProposalAssets),
             }),
         }
     }
