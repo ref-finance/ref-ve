@@ -122,7 +122,7 @@ impl Contract {
             PromiseResult::NotReady => unreachable!(),
             PromiseResult::Successful(_) => {
                 Event::RemovedProposalAssets {
-                    receive_id: &receiver_id,
+                    receiver_id: &receiver_id,
                     token_id: &token_id,
                     amount: &U128(amount),
                     success: true,
@@ -138,7 +138,7 @@ impl Contract {
                 );
 
                 Event::RemovedProposalAssets {
-                    receive_id: &receiver_id,
+                    receiver_id: &receiver_id,
                     token_id: &token_id,
                     amount: &U128(amount),
                     success: false,

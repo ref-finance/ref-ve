@@ -21,7 +21,7 @@ pub enum Event<'a> {
         proposal_id: u32,
     },
     RemovedProposalAssets {
-        receive_id: &'a AccountId,
+        receiver_id: &'a AccountId,
         token_id: &'a AccountId,
         amount: &'a U128,
         success: bool,
@@ -140,14 +140,14 @@ mod tests {
 
     #[test]
     fn event_removed_proposal_assets() {
-        let receive_id = &alice();
+        let receiver_id = &alice();
         let token_id = &token_id();
         let amount = &U128(100);
         let success = true;
-        Event::RemovedProposalAssets { receive_id, token_id, amount, success }.emit();
+        Event::RemovedProposalAssets { receiver_id, token_id, amount, success }.emit();
         assert_eq!(
             test_utils::get_logs()[0],
-            r#"EVENT_JSON:{"standard":"ref-ve","version":"1.0.0","event":"removed_proposal_assets","data":[{"receive_id":"alice","token_id":"ref","amount":"100","success":true}]}"#
+            r#"EVENT_JSON:{"standard":"ref-ve","version":"1.0.0","event":"removed_proposal_assets","data":[{"receiver_id":"alice","token_id":"ref","amount":"100","success":true}]}"#
         );
     }
 
