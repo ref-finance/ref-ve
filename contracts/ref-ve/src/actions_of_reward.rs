@@ -144,7 +144,8 @@ impl Contract {
                 };
                 if let Some(incentive) = proposal.incentive.get(&incentive_key) {
                     let votes_total_amount = proposal.get_votes_total_amount_for_reward_calc(incentive_key);
-                    let (token_id, reward_amount) = incentive.calc_reward(proposal.participants, votes_total_amount, self.data().cur_total_ve_lpt);
+                    let participants = proposal.get_participants_for_reward_calc(incentive_key);
+                    let (token_id, reward_amount) = incentive.calc_reward(participants, vote_detail.amount, votes_total_amount);
                     rewards.insert(token_id.clone(), reward_amount);
                 }
             }

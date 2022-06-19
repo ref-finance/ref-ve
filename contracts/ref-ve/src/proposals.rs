@@ -32,22 +32,13 @@ pub struct FarmingReward {
     pub portion_list: Vec<(String, u32)>
 }
 
-#[derive(BorshSerialize, BorshDeserialize, Serialize, Clone)]
+#[derive(BorshSerialize, BorshDeserialize, Serialize, Clone, Default)]
 #[cfg_attr(not(target_arch = "wasm32"), derive(Debug, Deserialize, PartialEq))]
 #[serde(crate = "near_sdk::serde")]
 pub struct VoteInfo {
     #[serde(with = "u128_dec_format")]
     pub total_ballots: u128,
     pub participants: u64,
-}
-
-impl Default for VoteInfo {
-    fn default() -> Self {
-        VoteInfo {
-            total_ballots: 0,
-            participants: 0,
-        }
-    }
 }
 
 #[derive(BorshSerialize, BorshDeserialize, Serialize, Clone)]
