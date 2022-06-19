@@ -20,7 +20,7 @@ pub enum Event<'a> {
         proposer_id: &'a AccountId,
         proposal_id: u32,
     },
-    RemovedProposalAsserts {
+    RemovedProposalAssets {
         receive_id: &'a AccountId,
         token_id: &'a AccountId,
         amount: &'a U128,
@@ -42,7 +42,7 @@ pub enum Event<'a> {
         success: bool,
     },
     LptWithdrawLostfound {
-        receive_id: &'a AccountId,
+        receiver_id: &'a AccountId,
         withdraw_amount: &'a U128,
         success: bool,
     },
@@ -144,10 +144,10 @@ mod tests {
         let token_id = &token_id();
         let amount = &U128(100);
         let success = true;
-        Event::RemovedProposalAsserts { receive_id, token_id, amount, success }.emit();
+        Event::RemovedProposalAssets { receive_id, token_id, amount, success }.emit();
         assert_eq!(
             test_utils::get_logs()[0],
-            r#"EVENT_JSON:{"standard":"ref-ve","version":"1.0.0","event":"removed_proposal_asserts","data":[{"receive_id":"alice","token_id":"ref","amount":"100","success":true}]}"#
+            r#"EVENT_JSON:{"standard":"ref-ve","version":"1.0.0","event":"removed_proposal_assets","data":[{"receive_id":"alice","token_id":"ref","amount":"100","success":true}]}"#
         );
     }
 
@@ -189,13 +189,13 @@ mod tests {
 
     #[test]
     fn event_lpt_withdraw_lostfound() {
-        let receive_id = &alice();
+        let receiver_id = &alice();
         let withdraw_amount = &U128(100);
         let success = true;
-        Event::LptWithdrawLostfound { receive_id, withdraw_amount, success }.emit();
+        Event::LptWithdrawLostfound { receiver_id, withdraw_amount, success }.emit();
         assert_eq!(
             test_utils::get_logs()[0],
-            r#"EVENT_JSON:{"standard":"ref-ve","version":"1.0.0","event":"lpt_withdraw_lostfound","data":[{"receive_id":"alice","withdraw_amount":"100","success":true}]}"#
+            r#"EVENT_JSON:{"standard":"ref-ve","version":"1.0.0","event":"lpt_withdraw_lostfound","data":[{"receiver_id":"alice","withdraw_amount":"100","success":true}]}"#
         );
     }
 

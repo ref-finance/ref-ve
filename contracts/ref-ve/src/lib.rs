@@ -130,7 +130,7 @@ pub struct ContractData {
     // if withdraw lpt encounter error, the lpt would go to here
     pub lostfound: Balance,
 
-    pub removed_proposal_asserts: UnorderedMap<AccountId, Balance>
+    pub removed_proposal_assets: UnorderedMap<AccountId, Balance>
 }
 
 /// Versioned contract data. Allows to easily upgrade contracts.
@@ -169,7 +169,7 @@ impl Contract {
                 cur_total_ve_lpt: 0,
                 cur_lock_lpt: 0,
                 lostfound: 0,
-                removed_proposal_asserts: UnorderedMap::new(StorageKeys::RemovedProposalAsserts),
+                removed_proposal_assets: UnorderedMap::new(StorageKeys::RemovedProposalAsserts),
             }),
         }
     }

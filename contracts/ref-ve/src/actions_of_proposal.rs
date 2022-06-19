@@ -74,8 +74,8 @@ impl Contract {
                 self.data_mut().proposals.remove(&proposal_id);
 
                 for item in proposal.incentive.values() {
-                    let current_amount = self.data().removed_proposal_asserts.get(&item.incentive_token_id).unwrap_or(0_u128);
-                    self.data_mut().removed_proposal_asserts.insert(
+                    let current_amount = self.data().removed_proposal_assets.get(&item.incentive_token_id).unwrap_or(0_u128);
+                    self.data_mut().removed_proposal_assets.insert(
                         &item.incentive_token_id,
                         &(item.incentive_amount + current_amount),
                     );

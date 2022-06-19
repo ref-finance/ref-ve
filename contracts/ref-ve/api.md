@@ -419,7 +419,7 @@ near view $VE get_unclaimed_proposal '{"account_id": "xxx"}'
   }
 }
 
-near view $VE list_removed_proposal_asserts
+near view $VE list_removed_proposal_assets
 { 'token_id': '200000000000000000000' }
 ```
 

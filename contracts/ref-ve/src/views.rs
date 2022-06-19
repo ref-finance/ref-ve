@@ -198,8 +198,8 @@ impl Contract {
         }
     }
 
-    pub fn list_removed_proposal_asserts(&self, from_index: Option<u64>, limit: Option<u64>) -> HashMap<AccountId, U128> {
-        let keys = self.data().removed_proposal_asserts.keys_as_vector();
+    pub fn list_removed_proposal_assets(&self, from_index: Option<u64>, limit: Option<u64>) -> HashMap<AccountId, U128> {
+        let keys = self.data().removed_proposal_assets.keys_as_vector();
 
         let from_index = from_index.unwrap_or(0);
         let limit = limit.unwrap_or(keys.len());
@@ -208,7 +208,7 @@ impl Contract {
             .map(|index| {
                 (
                     keys.get(index).unwrap(),
-                    self.data().removed_proposal_asserts.get(&keys.get(index).unwrap()).unwrap().into()
+                    self.data().removed_proposal_assets.get(&keys.get(index).unwrap()).unwrap().into()
                 )
             })
             .collect()

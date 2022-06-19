@@ -164,9 +164,9 @@ pub trait TokenPostActions {
         &mut self, token_id: AccountId, receive_id: AccountId, amount: U128,
     );
 
-    fn callback_withdraw_lpt(&mut self, sender_id: AccountId, amount: U128);
+    fn callback_withdraw_lpt(&mut self, sender_id: AccountId, amount: U128, #[callback_unwrap] result: U128);
 
-    fn callback_withdraw_lpt_lostfound(&mut self, receive_id: AccountId, amount: U128);
+    fn callback_withdraw_lpt_lostfound(&mut self, receiver_id: AccountId, amount: U128);
 
     fn callback_withdraw_lpt_slashed(&mut self, sender_id: AccountId, amount: U128);
 }

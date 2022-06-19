@@ -64,19 +64,19 @@ impl Contract {
     }
 
     #[payable]
-    pub fn return_removed_proposal_asserts(&mut self, account_id: AccountId, token_id: AccountId, amount: U128) -> Promise {
+    pub fn return_removed_proposal_assets(&mut self, account_id: AccountId, token_id: AccountId, amount: U128) -> Promise {
         assert_one_yocto();
         self.assert_owner();
 
-        let max_amount = self.data().removed_proposal_asserts.get(&token_id).unwrap_or(0_u128);
+        let max_amount = self.data().removed_proposal_assets.get(&token_id).unwrap_or(0_u128);
         require!(amount.0 <= max_amount, E101_INSUFFICIENT_BALANCE);
-        self.data_mut().removed_proposal_asserts.insert(&token_id, &(max_amount - amount.0));
+        self.data_mut().removed_proposal_assets.insert(&token_id, &(max_amount - amount.0));
 
         self.transfer_removed_proposal_asserts(&token_id, &account_id, amount.0)
     }
 
     #[private]
-    pub fn callback_withdraw_lpt_lostfound(&mut self, receive_id: AccountId, amount: U128) {
+    pub fn callback_withdraw_lpt_lostfound(&mut self, receiver_id: AccountId, amount: U128) {
         require!(
             env::promise_results_count() == 1,
             E001_PROMISE_RESULT_COUNT_INVALID
@@ -89,7 +89,7 @@ impl Contract {
                 self.data_mut().lostfound += amount;
 
                 Event::LptWithdrawLostfound {
-                    receive_id: &receive_id,
+                    receiver_id: &receiver_id,
                     withdraw_amount: &U128(amount),
                     success: false,
                 }
@@ -97,7 +97,7 @@ impl Contract {
             },
             PromiseResult::Successful(_) => {
                 Event::LptWithdrawLostfound {
-                    receive_id: &receive_id,
+                    receiver_id: &receiver_id,
                     withdraw_amount: &U128(amount),
                     success: true,
                 }
@@ -121,7 +121,7 @@ impl Contract {
         match env::promise_result(0) {
             PromiseResult::NotReady => unreachable!(),
             PromiseResult::Successful(_) => {
-                Event::RemovedProposalAsserts {
+                Event::RemovedProposalAssets {
                     receive_id: &receive_id,
                     token_id: &token_id,
                     amount: &U128(amount),
@@ -131,13 +131,13 @@ impl Contract {
             }
             PromiseResult::Failed => {
                 // This reverts the changes from withdraw function.
-                let current_amount = self.data().removed_proposal_asserts.get(&token_id).unwrap_or(0_u128);
-                self.data_mut().removed_proposal_asserts.insert(
+                let current_amount = self.data().removed_proposal_assets.get(&token_id).unwrap_or(0_u128);
+                self.data_mut().removed_proposal_assets.insert(
                     &token_id,
                     &(amount + current_amount),
                 );
 
-                Event::RemovedProposalAsserts {
+                Event::RemovedProposalAssets {
                     receive_id: &receive_id,
                     token_id: &token_id,
                     amount: &U128(amount),

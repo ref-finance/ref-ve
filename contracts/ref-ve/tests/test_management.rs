@@ -79,32 +79,32 @@ fn test_return_removed_proposal_asserts(){
     e.deposit_reward(&tokens.nref, &users.alice, to_yocto("100"), 1, 0, "Proportion".to_string()).assert_success();
 
     assert_eq!(e.remove_proposal(&users.alice, 0).unwrap_json::<bool>(), true);
-    assert_eq!(to_yocto("200"), e.list_removed_proposal_asserts().get(&tokens.nref.account_id()).unwrap().0);
+    assert_eq!(to_yocto("200"), e.list_removed_proposal_assets().get(&tokens.nref.account_id()).unwrap().0);
     assert_eq!(e.remove_proposal(&users.alice, 1).unwrap_json::<bool>(), true);
-    assert_eq!(to_yocto("300"), e.list_removed_proposal_asserts().get(&tokens.nref.account_id()).unwrap().0);
+    assert_eq!(to_yocto("300"), e.list_removed_proposal_assets().get(&tokens.nref.account_id()).unwrap().0);
 
 
     // error scene 
     // 1 : E002_NOT_ALLOWED
-    assert_err!(e.return_removed_proposal_asserts(&e.near, &users.alice, &tokens.nref, to_yocto("200")), E002_NOT_ALLOWED);
+    assert_err!(e.return_removed_proposal_assets(&e.near, &users.alice, &tokens.nref, to_yocto("200")), E002_NOT_ALLOWED);
 
     // 2 : E101_INSUFFICIENT_BALANCE
-    assert_err!(e.return_removed_proposal_asserts(&e.owner, &users.alice, &tokens.nref, to_yocto("500")), E101_INSUFFICIENT_BALANCE);
+    assert_err!(e.return_removed_proposal_assets(&e.owner, &users.alice, &tokens.nref, to_yocto("500")), E101_INSUFFICIENT_BALANCE);
 
     //success
-    e.return_removed_proposal_asserts(&e.owner, &users.alice, &tokens.nref, to_yocto("200")).assert_success();
+    e.return_removed_proposal_assets(&e.owner, &users.alice, &tokens.nref, to_yocto("200")).assert_success();
     assert_eq!(e.ft_balance_of(&tokens.nref, &users.alice), to_yocto("1900"));
-    assert_eq!(to_yocto("100"), e.list_removed_proposal_asserts().get(&tokens.nref.account_id()).unwrap().0);
+    assert_eq!(to_yocto("100"), e.list_removed_proposal_assets().get(&tokens.nref.account_id()).unwrap().0);
 
     e.ft_storage_unregister(&tokens.nref, &users.alice);
 
-    e.return_removed_proposal_asserts(&e.owner, &users.alice, &tokens.nref, to_yocto("100")).assert_success();
+    e.return_removed_proposal_assets(&e.owner, &users.alice, &tokens.nref, to_yocto("100")).assert_success();
     assert_eq!(e.ft_balance_of(&tokens.nref, &users.alice), 0);
-    assert_eq!(to_yocto("100"), e.list_removed_proposal_asserts().get(&tokens.nref.account_id()).unwrap().0);
+    assert_eq!(to_yocto("100"), e.list_removed_proposal_assets().get(&tokens.nref.account_id()).unwrap().0);
 
     e.ft_storage_deposit(&users.alice, &tokens.nref);
 
-    e.return_removed_proposal_asserts(&e.owner, &users.alice, &tokens.nref, to_yocto("100")).assert_success();
-    assert_eq!(0, e.list_removed_proposal_asserts().get(&tokens.nref.account_id()).unwrap().0);
+    e.return_removed_proposal_assets(&e.owner, &users.alice, &tokens.nref, to_yocto("100")).assert_success();
+    assert_eq!(0, e.list_removed_proposal_assets().get(&tokens.nref.account_id()).unwrap().0);
     assert_eq!(e.ft_balance_of(&tokens.nref, &users.alice), to_yocto("100"));
 }
