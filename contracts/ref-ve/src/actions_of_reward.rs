@@ -21,12 +21,10 @@ impl Contract {
         let mut proposal = self.internal_unwrap_proposal(proposal_id);
         if proposal.status == Some(ProposalStatus::Expired) {
             if let Some(vote_detail) = account.proposals.remove(&proposal_id) {
-                if let ProposalKind::Poll { .. } = proposal.kind {
-                    if let Some((token_id, reward_amount)) = proposal.claim_reward(vote_detail.amount) {
-                        account.add_rewards(&HashMap::from([(token_id, reward_amount)]));
-                    }
-                    self.data_mut().proposals.insert(&proposal_id, &proposal.into());
+                if let Some((token_id, reward_amount)) = proposal.claim_reward(&vote_detail) {
+                    account.add_rewards(&HashMap::from([(token_id, reward_amount)]));
                 }
+                self.data_mut().proposals.insert(&proposal_id, &proposal.into());
                 account.proposals_history.insert(&proposal_id, &vote_detail);
                 self.internal_set_account(&account_id, account);
             }
@@ -118,7 +116,7 @@ impl Contract {
         account.proposals.retain(|proposal_id, vote_detail| {
             let mut proposal = self.internal_unwrap_proposal(*proposal_id);
             if proposal.status == Some(ProposalStatus::Expired) {
-                if let Some((token_id, reward_amount)) = proposal.claim_reward(vote_detail.amount){
+                if let Some((token_id, reward_amount)) = proposal.claim_reward(vote_detail){
                     rewards.insert(token_id, reward_amount);
                 }
                 history.insert(*proposal_id, vote_detail.clone());
@@ -136,12 +134,18 @@ impl Contract {
     pub fn internal_calc_account_unclaim_rewards(&self, account_id: &AccountId) -> HashMap<AccountId, Balance> {
         let account = self.internal_unwrap_account(account_id);
         let mut rewards = HashMap::new();
-        for (proposal_id, _) in account.proposals {
+        for (proposal_id, vote_detail) in account.proposals {
             let proposal = self.internal_unwrap_proposal(proposal_id);
             if proposal.status == Some(ProposalStatus::Expired) {
-                if let Some(incentive) = &proposal.incentive {
-                    let votes_total_amount = proposal.get_votes_total_amount();
-                    let (token_id, reward_amount) = incentive.calc_reward(proposal.participants, votes_total_amount, self.data().cur_total_ve_lpt);
+                let incentive_key = if let ProposalKind::FarmingReward { .. } = proposal.kind {
+                    vote_detail.action.get_index() as u32
+                } else {
+                    0
+                };
+                if let Some(incentive) = proposal.incentive.get(&incentive_key) {
+                    let votes_total_amount = proposal.get_votes_total_amount_for_reward_calc(incentive_key);
+                    let participants = proposal.get_participants_for_reward_calc(incentive_key);
+                    let (token_id, reward_amount) = incentive.calc_reward(participants, vote_detail.amount, votes_total_amount);
                     rewards.insert(token_id.clone(), reward_amount);
                 }
             }

@@ -101,12 +101,12 @@ Note:
 are executed by calling reward token's `ft_transfer_call ` with the following msg:
 ```rust
 enum FTokenReceiverMessage {
-    Reward { proposal_id: u32 }
+    Reward { proposal_id: u32, incentive_key: u32, incentive_type: IncentiveType }
 }
 ```
 Eg:
 ```bash
-near call ref.$FT ft_transfer_call '{"receiver_id": "'$VE'", "amount": "36'$ZERO18'", "msg": "{\"Reward\":{\"proposal_id\":0,\"incentive_type\": \"Proportion\"}}"}' --account_id=u1.testnet --depositYocto=1 --gas=100$TGAS || true
+near call ref.$FT ft_transfer_call '{"receiver_id": "'$VE'", "amount": "36'$ZERO18'", "msg": "{\"Reward\":{\"proposal_id\":0, \"incentive_key\": 0, \"incentive_type\": \"Proportion\"}}"}' --account_id=u1.testnet --depositYocto=1 --gas=100$TGAS || true
 ```
 ### Proposal
 
@@ -118,12 +118,9 @@ pub enum ProposalKind {
         total_reward: u32
     },
     Poll {
-        description: String,
         options: Vec<String>,
     },
-    Common {
-        description: String,
-    },
+    Common,
 }
 pub enum IncentiveType{
     Evenly,
@@ -132,6 +129,7 @@ pub enum IncentiveType{
 pub fn create_proposal(
         &mut self,
         kind: ProposalKind,
+        description: String,
         start_at: u32,
         duration_sec: u32,
         incentive_detail: Option<(AccountId, IncentiveType)>
@@ -141,15 +139,15 @@ Eg:
 
 create farming reward proposal
 ```bash
-near call $VE create_proposal '{"kind": {"FarmingReward":{"farm_list":["ref<>celo", "usn<>usdt"],"total_reward": 200000}}, "start_at": 1654650000, "duration_sec": 86400 }' --account_id=u1.testnet 
+near call $VE create_proposal '{"kind": {"FarmingReward":{"farm_list":["ref<>celo", "usn<>usdt"],"total_reward": 200000}}, "description": "FarmingReward Proposal", "start_at": 1655736586, "duration_sec": 86400 }' --account_id=u1.testnet 
 ```
 create common proposal
 ```bash
-near call $VE create_proposal '{"kind": {"Common":{"description":"xxx"}}, "start_at": 1654650000, "duration_sec": 5184000 }' --account_id=u1.testnet 
+near call $VE create_proposal '{"kind": "Common", "description": "Common Proposal", "start_at": 1655736586, "duration_sec": 5184000 }' --account_id=u1.testnet 
 ```
 create poll
 ```bash
-near call $VE create_proposal '{"kind": {"Poll":{ "description": "Poll Proposal", "options":["topic1", "topic2"]}}, "start_at": 1654650000, "duration_sec": 5184000 }' --account_id=u1.testnet 
+near call $VE create_proposal '{"kind": {"Poll":{ "options":["topic1", "topic2"]}}, "description": "Poll Proposal", "start_at": 1655736586, "duration_sec": 5184000 }' --account_id=u1.testnet 
 ```
 **Remove Proposal** 
 ```rust
@@ -255,51 +253,87 @@ near view $VE list_proposals
     kind: {
       FarmingReward: { farm_list: [ 'ref<>celo', 'usn<>usdt' ], total_reward: 200000 }
     },
-    votes: [ '0', '0' ],
+    description: "FarmingReward Proposal",
+    votes: [
+      { total_ballots: '0', participants: 0 },
+      { total_ballots: '0', participants: 0 },
+      { total_ballots: '0', participants: 0 }
+    ],
     start_at: '1654650000000000000',
     end_at: '1654736400000000000',
     participants: '0',
-    incentive: null,
+    incentive: {
+      '0': {
+        incentive_type: 'Proportion',
+        incentive_token_id: 'token_id',
+        incentive_amount: '100000000000000000000',
+        claimed_amount: '0'
+      },
+      '1': {
+        incentive_type: 'Proportion',
+        incentive_token_id: 'token_id',
+        incentive_amount: '100000000000000000000',
+        claimed_amount: '0'
+      }
+    },
     status: 'WarmUp',
     is_nonsense: null
   },
   {
     id: 1,
     proposer: 'user_account_id',
-    kind: { Common: { description: 'xxx' } },
-    votes: [ '0', '0', '0', '0' ],
+    kind: 'Common',
+    description: "Common Proposal",
+    votes: [
+      { total_ballots: '0', participants: 0 },
+      { total_ballots: '0', participants: 0 },
+      { total_ballots: '0', participants: 0 },
+      { total_ballots: '0', participants: 0 }
+    ],
     start_at: '1654650000000000000',
     end_at: '1659834000000000000',
     participants: '0',
-    incentive: null,
+    incentive: {},
     status: 'WarmUp',
     is_nonsense: null
   },
   {
     id: 2,
     proposer: 'user_account_id',
-    kind: { Poll: { description: 'xxx', options: [ 'topic1', 'topic2' ] } },
-    votes: [ '0', '0' ],
+    kind: { Poll: { options: [ 'topic1', 'topic2' ] } },
+    description: "Poll Proposal",
+    votes: [
+      { total_ballots: '0', participants: 0 },
+      { total_ballots: '0', participants: 0 },
+      { total_ballots: '0', participants: 0 }
+    ],
     start_at: '1654650000000000000',
     end_at: '1659834000000000000',
     participants: '0',
-    incentive: null,
+    incentive: {},
     status: 'WarmUp',
     is_nonsense: null
   },
   {
     id: 3,
     proposer: 'user_account_id',
-    kind: { Poll: { descriptions: [ 'topic1', 'topic2' ] } },
-    votes: [ '0', '0' ],
+    kind: { Poll: { options: [ 'topic1', 'topic2' ] } },
+    description: "Poll Proposal",
+    votes: [
+      { total_ballots: '0', participants: 0 },
+      { total_ballots: '0', participants: 0 },
+      { total_ballots: '0', participants: 0 }
+    ],
     start_at: '1654660800000000000',
     end_at: '1659844800000000000',
     participants: '0',
     incentive: {
-      incentive_type: 'Proportion',
-      incentive_token_id: 'token_id',
-      incentive_amount: '1000000000000000000',
-      claimed_amount: '0'
+      '0': {
+        incentive_type: 'Proportion',
+        incentive_token_id: 'token_id',
+        incentive_amount: '100000000000000000000',
+        claimed_amount: '0'
+      }
     },
     status: 'WarmUp',
     is_nonsense: null
@@ -308,19 +342,37 @@ near view $VE list_proposals
 
 near view $VE get_proposal '{"proposal_id": 0}'
 {
-  id: 0,
-  proposer: 'user_account_id',
-  kind: {
-    FarmingReward: { farm_list: [ 'ref<>celo', 'usn<>usdt' ], total_reward: 200000 }
-  },
-  votes: [ '0', '0' ],
-  start_at: '1654650000000000000',
-  end_at: '1654736400000000000',
-  participants: '0',
-  incentive: null,
-  status: 'WarmUp',
-  is_nonsense: null
-}
+    id: 0,
+    proposer: 'user_account_id',
+    kind: {
+      FarmingReward: { farm_list: [ 'ref<>celo', 'usn<>usdt' ], total_reward: 200000 }
+    },
+    description: "FarmingReward Proposal",
+    votes: [
+      { total_ballots: '0', participants: 0 },
+      { total_ballots: '0', participants: 0 },
+      { total_ballots: '0', participants: 0 }
+    ],
+    start_at: '1654650000000000000',
+    end_at: '1654736400000000000',
+    participants: '0',
+    incentive: {
+      '0': {
+        incentive_type: 'Proportion',
+        incentive_token_id: 'token_id',
+        incentive_amount: '100000000000000000000',
+        claimed_amount: '0'
+      },
+      '1': {
+        incentive_type: 'Proportion',
+        incentive_token_id: 'token_id',
+        incentive_amount: '100000000000000000000',
+        claimed_amount: '0'
+      }
+    },
+    status: 'WarmUp',
+    is_nonsense: null
+  }
 
 near view $VE get_account_info '{"account_id": "xxx"}'
 {
@@ -366,6 +418,9 @@ near view $VE get_unclaimed_proposal '{"account_id": "xxx"}'
     amount: '200000000000000000000'
   }
 }
+
+near view $VE list_removed_proposal_assets
+{ 'token_id': '200000000000000000000' }
 ```
 
 **Storage**

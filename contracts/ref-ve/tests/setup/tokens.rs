@@ -88,6 +88,22 @@ impl Env {
             .assert_success();
     }
 
+    pub fn ft_storage_unregister(&self, token: &UserAccount, account: &UserAccount) {
+        account
+            .call(
+                token.account_id.clone(),
+                "storage_unregister",
+                &json!({
+                    "force": true,
+                })
+                .to_string()
+                .into_bytes(),
+                DEFAULT_GAS.0,
+                1,
+            )
+            .assert_success();
+    }
+
     pub fn ft_balance_of(&self, token: &UserAccount, user_account: &UserAccount) -> u128{
         let amount: U128 = self.owner
             .view(

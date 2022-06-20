@@ -145,7 +145,7 @@ impl Contract {
         account.proposals.retain(|proposal_id, vote_detail| {
             let mut proposal = self.internal_unwrap_proposal(*proposal_id);
             if proposal.status == Some(ProposalStatus::Expired) {
-                if let Some((token_id, reward_amount)) = proposal.claim_reward(vote_detail.amount) {
+                if let Some((token_id, reward_amount)) = proposal.claim_reward(vote_detail) {
                     rewards.insert(token_id, reward_amount);
                 }
                 self.data_mut().proposals.insert(proposal_id, &proposal.into());
@@ -158,6 +158,7 @@ impl Contract {
                     if is_increased {
                         vote_detail.amount += diff_ve_lpt_amount;
                     } else if vote_detail.amount == diff_ve_lpt_amount {
+                        proposal.votes[vote_detail.action.get_index()].participants -= 1;
                         proposal.participants -= 1;
                         is_retain = false
                     } else {

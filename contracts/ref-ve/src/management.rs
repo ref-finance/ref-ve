@@ -1,4 +1,5 @@
 use crate::*;
+use near_contract_standards::fungible_token::core_impl::ext_fungible_token;
 
 #[near_bindgen]
 impl Contract {
@@ -62,8 +63,20 @@ impl Contract {
         self.transfer_lpt_lostfound(&account_id, amount.0)
     }
 
+    #[payable]
+    pub fn return_removed_proposal_assets(&mut self, account_id: AccountId, token_id: AccountId, amount: U128) -> Promise {
+        assert_one_yocto();
+        self.assert_owner();
+
+        let max_amount = self.data().removed_proposal_assets.get(&token_id).unwrap_or(0_u128);
+        require!(amount.0 <= max_amount, E101_INSUFFICIENT_BALANCE);
+        self.data_mut().removed_proposal_assets.insert(&token_id, &(max_amount - amount.0));
+
+        self.transfer_removed_proposal_assets(&token_id, &account_id, amount.0)
+    }
+
     #[private]
-    pub fn callback_withdraw_lpt_lostfound(&mut self, sender_id: AccountId, amount: U128) {
+    pub fn callback_withdraw_lpt_lostfound(&mut self, receiver_id: AccountId, amount: U128) {
         require!(
             env::promise_results_count() == 1,
             E001_PROMISE_RESULT_COUNT_INVALID
@@ -76,7 +89,7 @@ impl Contract {
                 self.data_mut().lostfound += amount;
 
                 Event::LptWithdrawLostfound {
-                    caller_id: &sender_id,
+                    receiver_id: &receiver_id,
                     withdraw_amount: &U128(amount),
                     success: false,
                 }
@@ -84,9 +97,51 @@ impl Contract {
             },
             PromiseResult::Successful(_) => {
                 Event::LptWithdrawLostfound {
-                    caller_id: &sender_id,
+                    receiver_id: &receiver_id,
                     withdraw_amount: &U128(amount),
                     success: true,
+                }
+                .emit();
+            }
+        }
+    }
+
+    #[private]
+    pub fn callback_removed_proposal_assets(
+        &mut self,
+        token_id: AccountId,
+        receiver_id: AccountId,
+        amount: U128,
+    ) {
+        require!(
+            env::promise_results_count() == 1,
+            E001_PROMISE_RESULT_COUNT_INVALID
+        );
+        let amount: Balance = amount.into();
+        match env::promise_result(0) {
+            PromiseResult::NotReady => unreachable!(),
+            PromiseResult::Successful(_) => {
+                Event::RemovedProposalAssets {
+                    receiver_id: &receiver_id,
+                    token_id: &token_id,
+                    amount: &U128(amount),
+                    success: true,
+                }
+                .emit();
+            }
+            PromiseResult::Failed => {
+                // This reverts the changes from withdraw function.
+                let current_amount = self.data().removed_proposal_assets.get(&token_id).unwrap_or(0_u128);
+                self.data_mut().removed_proposal_assets.insert(
+                    &token_id,
+                    &(amount + current_amount),
+                );
+
+                Event::RemovedProposalAssets {
+                    receiver_id: &receiver_id,
+                    token_id: &token_id,
+                    amount: &U128(amount),
+                    success: false,
                 }
                 .emit();
             }
@@ -111,6 +166,25 @@ impl Contract {
             env::current_account_id(),
             0,
             GAS_FOR_RESOLVE_LPT_TRANSFER,
+        ))
+    }
+
+    fn transfer_removed_proposal_assets(&mut self, token_id: &AccountId, account_id: &AccountId, amount: Balance) -> Promise {
+        ext_fungible_token::ft_transfer(
+            account_id.clone(),
+            amount.into(),
+            None,
+            token_id.clone(),
+            1,
+            GAS_FOR_REMOVED_PROPOSAL_ASSETS,
+        )
+        .then(ext_self::callback_removed_proposal_assets(
+            token_id.clone(),
+            account_id.clone(),
+            amount.into(),
+            env::current_account_id(),
+            0,
+            GAS_FOR_RESOLVE_REMOVED_PROPOSAL_ASSETS,
         ))
     }
 }

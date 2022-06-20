@@ -20,6 +20,12 @@ pub enum Event<'a> {
         proposer_id: &'a AccountId,
         proposal_id: u32,
     },
+    RemovedProposalAssets {
+        receiver_id: &'a AccountId,
+        token_id: &'a AccountId,
+        amount: &'a U128,
+        success: bool,
+    },
     ActionProposal {
         voter_id: &'a AccountId,
         proposal_id: u32,
@@ -36,7 +42,7 @@ pub enum Event<'a> {
         success: bool,
     },
     LptWithdrawLostfound {
-        caller_id: &'a AccountId,
+        receiver_id: &'a AccountId,
         withdraw_amount: &'a U128,
         success: bool,
     },
@@ -122,13 +128,26 @@ mod tests {
     }
 
     #[test]
-    fn event_proposal_remote() {
+    fn event_proposal_remove() {
         let proposer_id = &alice();
         let proposal_id = 0;
         Event::ProposalRemove { proposer_id, proposal_id }.emit();
         assert_eq!(
             test_utils::get_logs()[0],
             r#"EVENT_JSON:{"standard":"ref-ve","version":"1.0.0","event":"proposal_remove","data":[{"proposer_id":"alice","proposal_id":0}]}"#
+        );
+    }
+
+    #[test]
+    fn event_removed_proposal_assets() {
+        let receiver_id = &alice();
+        let token_id = &token_id();
+        let amount = &U128(100);
+        let success = true;
+        Event::RemovedProposalAssets { receiver_id, token_id, amount, success }.emit();
+        assert_eq!(
+            test_utils::get_logs()[0],
+            r#"EVENT_JSON:{"standard":"ref-ve","version":"1.0.0","event":"removed_proposal_assets","data":[{"receiver_id":"alice","token_id":"ref","amount":"100","success":true}]}"#
         );
     }
 
@@ -170,13 +189,13 @@ mod tests {
 
     #[test]
     fn event_lpt_withdraw_lostfound() {
-        let caller_id = &alice();
+        let receiver_id = &alice();
         let withdraw_amount = &U128(100);
         let success = true;
-        Event::LptWithdrawLostfound { caller_id, withdraw_amount, success }.emit();
+        Event::LptWithdrawLostfound { receiver_id, withdraw_amount, success }.emit();
         assert_eq!(
             test_utils::get_logs()[0],
-            r#"EVENT_JSON:{"standard":"ref-ve","version":"1.0.0","event":"lpt_withdraw_lostfound","data":[{"caller_id":"alice","withdraw_amount":"100","success":true}]}"#
+            r#"EVENT_JSON:{"standard":"ref-ve","version":"1.0.0","event":"lpt_withdraw_lostfound","data":[{"receiver_id":"alice","withdraw_amount":"100","success":true}]}"#
         );
     }
 

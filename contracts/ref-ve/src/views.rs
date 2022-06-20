@@ -182,10 +182,13 @@ impl Contract {
             for (proposal_id, vote_detail) in account.proposals {
                 let proposal = self.internal_unwrap_proposal(proposal_id);
                 if proposal.status == Some(ProposalStatus::Expired) {
-                    if let ProposalKind::Poll { .. } = proposal.kind {
-                        if proposal.incentive.is_some() {
-                            result.insert(proposal_id, vote_detail.clone());
-                        }
+                    match proposal.kind {
+                        ProposalKind::Poll { .. } | ProposalKind::FarmingReward { .. } => {
+                            if !proposal.incentive.is_empty() {
+                                result.insert(proposal_id, vote_detail.clone());
+                            }
+                        },
+                        _ => {}
                     }
                 }
             }
@@ -193,5 +196,21 @@ impl Contract {
         } else {
             HashMap::new()
         }
+    }
+
+    pub fn list_removed_proposal_assets(&self, from_index: Option<u64>, limit: Option<u64>) -> HashMap<AccountId, U128> {
+        let keys = self.data().removed_proposal_assets.keys_as_vector();
+
+        let from_index = from_index.unwrap_or(0);
+        let limit = limit.unwrap_or(keys.len());
+
+        (from_index..std::cmp::min(from_index + limit, keys.len()))
+            .map(|index| {
+                (
+                    keys.get(index).unwrap(),
+                    self.data().removed_proposal_assets.get(&keys.get(index).unwrap()).unwrap().into()
+                )
+            })
+            .collect()
     }
 }

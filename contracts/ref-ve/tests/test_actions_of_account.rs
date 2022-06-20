@@ -65,10 +65,22 @@ fn test_withdraw_lpt() {
     e.lock_lpt(&users.alice, to_yocto("100"), DEFAULT_MAX_LOCKING_DURATION_SEC).assert_success();
     e.skip_time(DEFAULT_MAX_LOCKING_DURATION_SEC);
     e.extend_whitelisted_accounts(&e.owner, vec![users.alice.account_id()]).assert_success();
-    e.create_proposal(&users.alice, ProposalKind::Common { description: "Common Proposal".to_string() }, to_sec(e.current_time() + DAY_TS), DEFAULT_MIN_PROPOSAL_VOTING_PERIOD_SEC, to_yocto("1")).assert_success();
+    e.create_proposal(&users.alice, ProposalKind::Common, "Common".to_string(), to_sec(e.current_time() + DAY_TS), DEFAULT_MIN_PROPOSAL_VOTING_PERIOD_SEC, to_yocto("1")).assert_success();
     e.skip_time(DAY_SEC);
     e.action_proposal(&users.alice, 0, Action::VoteApprove, None).assert_success();
-    assert_eq!(vec![to_ve_token("200"), 0, 0, to_ve_token("200")], e.get_proposal(0).unwrap().votes);
+    assert_eq!(vec![VoteInfo{
+        total_ballots: to_ve_token("200"),
+        participants: 1
+    }, VoteInfo{
+        total_ballots: 0,
+        participants: 0
+    }, VoteInfo{
+        total_ballots: 0,
+        participants: 0
+    }, VoteInfo{
+        total_ballots: to_ve_token("200"),
+        participants: 0
+    }], e.get_proposal(0).unwrap().votes);
     assert_eq!(HashMap::from([(0, VoteDetail {
         action: Action::VoteApprove, amount: to_ve_token("200")
     })]), e.get_vote_detail(&users.alice));
@@ -76,9 +88,33 @@ fn test_withdraw_lpt() {
     assert_eq!(HashMap::from([(0, VoteDetail {
         action: Action::VoteApprove, amount: to_ve_token("100")
     })]), e.get_vote_detail(&users.alice));
-    assert_eq!(vec![to_ve_token("100"), 0, 0, to_ve_token("100")], e.get_proposal(0).unwrap().votes);
+    assert_eq!(vec![VoteInfo{
+        total_ballots: to_ve_token("100"),
+        participants: 1
+    }, VoteInfo{
+        total_ballots: 0,
+        participants: 0
+    }, VoteInfo{
+        total_ballots: 0,
+        participants: 0
+    }, VoteInfo{
+        total_ballots: to_ve_token("100"),
+        participants: 0
+    }], e.get_proposal(0).unwrap().votes);
     e.withdraw_lpt(&users.alice, None).assert_success();
-    assert_eq!(vec![0, 0, 0, 0], e.get_proposal(0).unwrap().votes);
+    assert_eq!(vec![VoteInfo{
+        total_ballots: 0,
+        participants: 0
+    }, VoteInfo{
+        total_ballots: 0,
+        participants: 0
+    }, VoteInfo{
+        total_ballots: 0,
+        participants: 0
+    }, VoteInfo{
+        total_ballots: 0,
+        participants: 0
+    }], e.get_proposal(0).unwrap().votes);
     assert_eq!(HashMap::new(), e.get_vote_detail(&users.alice));
     assert_eq!(HashMap::new(), e.get_vote_detail_history(&users.alice));
 }

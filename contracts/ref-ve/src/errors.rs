@@ -18,6 +18,7 @@ pub const E203_INVALID_INCENTIVE_TOKEN: &str = "E203: invalid incentive token";
 pub const E204_VOTE_CAN_NOT_CANCEL: &str = "E204: vote can not cancel";
 pub const E205_NOT_VOTABLE: &str = "E205: not votable";
 pub const E206_NO_VOTED: &str = "E206: no voted";
+pub const E207_INVALID_INCENTIVE_KEY: &str = "E207: invalid incentive key";
 
 pub const E301_INVALID_RATIO: &str = "E301: invalid ratio";
 pub const E302_INVALID_DURATION: &str = "E302: invalid duration";
