@@ -56,6 +56,7 @@ pub enum Event<'a> {
     RewardDeposit {
         caller_id: &'a AccountId,
         proposal_id: u32,
+        incentive_key: u32,
         token_id: &'a AccountId,
         deposit_amount: &'a U128,
         total_amount: &'a U128,
@@ -117,13 +118,13 @@ mod tests {
     fn event_proposal_create() {
         let proposer_id = &alice();
         let proposal_id = 0;
-        let kind = &format!("{:?}", ProposalKind::FarmingReward{ farm_list: vec!["ref<>celo".to_string(), "usn<>usdt".to_string()], total_reward: 2});
+        let kind = &format!("{:?}", ProposalKind::FarmingReward{ farm_list: vec!["noct.near|nref.near&2657".to_string(), "nusdt.near|nusdc.near|ndai.near&1910".to_string()], total_reward: 2});
         let start_at = 1000_u64;
         let duration_sec = 500_u32;
         Event::ProposalCreate { proposer_id, proposal_id, kind, start_at, duration_sec }.emit();
         assert_eq!(
             test_utils::get_logs()[0],
-            r#"EVENT_JSON:{"standard":"ref-ve","version":"1.0.0","event":"proposal_create","data":[{"proposer_id":"alice","proposal_id":0,"kind":"FarmingReward { farm_list: [\"ref<>celo\", \"usn<>usdt\"], total_reward: 2 }","start_at":1000,"duration_sec":500}]}"#
+            r#"EVENT_JSON:{"standard":"ref-ve","version":"1.0.0","event":"proposal_create","data":[{"proposer_id":"alice","proposal_id":0,"kind":"FarmingReward { farm_list: [\"noct.near|nref.near&2657\", \"nusdt.near|nusdc.near|ndai.near&1910\"], total_reward: 2 }","start_at":1000,"duration_sec":500}]}"#
         );
     }
 
@@ -216,14 +217,15 @@ mod tests {
     fn event_reward_deposit() {
         let caller_id = &alice();
         let proposal_id = 0;
+        let incentive_key = 0;
         let token_id = &token_id();
         let deposit_amount = &U128(100);
         let total_amount = &U128(1000);
         let start_at = 1000000;
-        Event::RewardDeposit { caller_id, proposal_id, token_id, deposit_amount, total_amount, start_at }.emit();
+        Event::RewardDeposit { caller_id, proposal_id, incentive_key, token_id, deposit_amount, total_amount, start_at }.emit();
         assert_eq!(
             test_utils::get_logs()[0],
-            r#"EVENT_JSON:{"standard":"ref-ve","version":"1.0.0","event":"reward_deposit","data":[{"caller_id":"alice","proposal_id":0,"token_id":"ref","deposit_amount":"100","total_amount":"1000","start_at":1000000}]}"#
+            r#"EVENT_JSON:{"standard":"ref-ve","version":"1.0.0","event":"reward_deposit","data":[{"caller_id":"alice","proposal_id":0,"incentive_key":0,"token_id":"ref","deposit_amount":"100","total_amount":"1000","start_at":1000000}]}"#
         );
     }
 

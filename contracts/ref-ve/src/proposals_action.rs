@@ -60,37 +60,14 @@ impl Proposal {
         &mut self,
         action: &Action,
         amount: Balance,
-        total: Balance,
         is_increased: bool
     ) {
         let index = action.get_index();
-        match &self.kind {
-            ProposalKind::FarmingReward { farm_list, .. } => {
-                require!(index < farm_list.len(), E201_INVALID_VOTE);
-                if is_increased {
-                    self.votes[index].total_ballots += amount;
-                } else {
-                    self.votes[index].total_ballots -= amount;
-                }
-                self.votes[farm_list.len()].total_ballots = total;
-            },
-            ProposalKind::Poll { options } => {
-                require!(index < options.len(), E201_INVALID_VOTE);
-                if is_increased {
-                    self.votes[index].total_ballots += amount;
-                } else {
-                    self.votes[index].total_ballots -= amount;
-                }
-                self.votes[options.len()].total_ballots = total;
-            },
-            ProposalKind::Common { .. } => {
-                if is_increased {
-                    self.votes[index].total_ballots += amount;
-                } else {
-                    self.votes[index].total_ballots -= amount;
-                }
-                self.votes[3].total_ballots = total;
-            }
+        require!(index < self.votes.len(), E201_INVALID_VOTE);
+        if is_increased {
+            self.votes[index].total_ballots += amount;
+        } else {
+            self.votes[index].total_ballots -= amount;
         }
     }
 }
@@ -112,9 +89,9 @@ impl Contract {
                 proposal.update_votes(
                     action,
                     amount,
-                    self.data().cur_total_ve_lpt,
                     true
                 );
+                proposal.ve_amount_at_last_action = self.data().cur_total_ve_lpt;
                 proposal.votes[action.get_index()].participants += 1;
                 proposal.participants += 1;
                 
@@ -129,8 +106,7 @@ impl Contract {
     pub fn internal_cancel_vote(
         &mut self,
         proposal_id: u32,
-        action: &Action,
-        amount: Balance,
+        vote_detail: &VoteDetail
     ) {
         let mut proposal = self.internal_unwrap_proposal(proposal_id);
         
@@ -139,12 +115,12 @@ impl Contract {
             Some(ProposalStatus::InProgress) => {
                 // update proposal result
                 proposal.update_votes(
-                    action,
-                    amount,
-                    self.data().cur_total_ve_lpt,
+                    &vote_detail.action,
+                    vote_detail.amount,
                     false
                 );
-                proposal.votes[action.get_index()].participants -= 1;
+                proposal.ve_amount_at_last_action = self.data().cur_total_ve_lpt;
+                proposal.votes[vote_detail.action.get_index()].participants -= 1;
                 proposal.participants -= 1;
                 
                 self.data_mut()

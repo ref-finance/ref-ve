@@ -77,7 +77,7 @@ fn test_action_proposal(){
 
     e.extend_whitelisted_accounts(&e.owner, vec![users.bob.account_id()]).assert_success();
     
-    e.create_proposal(&users.bob, ProposalKind::FarmingReward { farm_list: vec!["ref<>celo".to_string(), "usn<>usdt".to_string()], total_reward: 2 }, "FarmingReward".to_string(), to_sec(e.current_time() + DAY_TS), 1000, 0).assert_success();
+    e.create_proposal(&users.bob, ProposalKind::FarmingReward { farm_list: vec!["noct.near|nref.near&2657".to_string(), "nusdt.near|nusdc.near|ndai.near&1910".to_string()], total_reward: 2 }, "FarmingReward".to_string(), to_sec(e.current_time() + DAY_TS), 1000, 0).assert_success();
     e.create_proposal(&users.bob, ProposalKind::Poll { options: vec!["topic1".to_string(), "topic2".to_string()] }, "Poll".to_string(), to_sec(e.current_time() + DAY_TS), 1000, 0).assert_success();
     e.create_proposal(&users.bob, ProposalKind::Common, "Common".to_string(), to_sec(e.current_time() + DAY_TS), DEFAULT_MIN_PROPOSAL_VOTING_PERIOD_SEC, to_yocto("1")).assert_success();
 
@@ -112,20 +112,18 @@ fn test_action_proposal(){
     }, VoteInfo{
         total_ballots: 0,
         participants: 0
-    }, VoteInfo{
-        total_ballots: to_ve_token("200"),
-        participants: 0
     }], e.get_proposal(0).unwrap().votes);
+    assert_eq!(to_ve_token("200"), e.get_proposal(0).unwrap().ve_amount_at_last_action);
+
     assert_eq!(vec![VoteInfo{
         total_ballots: 0,
         participants: 0
     }, VoteInfo{
         total_ballots: to_ve_token("200"),
         participants: 1
-    }, VoteInfo{
-        total_ballots: to_ve_token("200"),
-        participants: 0
     }], e.get_proposal(1).unwrap().votes);
+    assert_eq!(to_ve_token("200"), e.get_proposal(1).unwrap().ve_amount_at_last_action);
+
     assert_eq!(vec![VoteInfo{
         total_ballots: 0,
         participants: 0
@@ -134,11 +132,9 @@ fn test_action_proposal(){
         participants: 1
     }, VoteInfo{
         total_ballots: 0,
-        participants: 0
-    }, VoteInfo{
-        total_ballots: to_ve_token("200"),
         participants: 0
     }], e.get_proposal(2).unwrap().votes);
+    assert_eq!(to_ve_token("200"), e.get_proposal(2).unwrap().ve_amount_at_last_action);
 
     assert_eq!(HashMap::from([(0, VoteDetail{
         action: Action::VoteFarm { farm_id: 0 },
@@ -159,20 +155,18 @@ fn test_action_proposal(){
     }, VoteInfo{
         total_ballots: 0,
         participants: 0
-    }, VoteInfo{
-        total_ballots: to_ve_token("400"),
-        participants: 0
     }], e.get_proposal(0).unwrap().votes);
+    assert_eq!(to_ve_token("400"), e.get_proposal(0).unwrap().ve_amount_at_last_action);
+
     assert_eq!(vec![VoteInfo{
         total_ballots: 0,
         participants: 0
     }, VoteInfo{
         total_ballots: to_ve_token("400"),
         participants: 1
-    }, VoteInfo{
-        total_ballots: to_ve_token("400"),
-        participants: 0
     }], e.get_proposal(1).unwrap().votes);
+    assert_eq!(to_ve_token("400"), e.get_proposal(1).unwrap().ve_amount_at_last_action);
+
     assert_eq!(vec![VoteInfo{
         total_ballots: 0,
         participants: 0
@@ -181,11 +175,9 @@ fn test_action_proposal(){
         participants: 1
     }, VoteInfo{
         total_ballots: 0,
-        participants: 0
-    }, VoteInfo{
-        total_ballots: to_ve_token("400"),
         participants: 0
     }], e.get_proposal(2).unwrap().votes);
+    assert_eq!(to_ve_token("400"), e.get_proposal(2).unwrap().ve_amount_at_last_action);
 
     assert_eq!(1, e.get_proposal(0).unwrap().participants);
     assert_eq!(1, e.get_proposal(1).unwrap().participants);
@@ -238,7 +230,7 @@ fn test_action_proposal_farming_reward_01(){
     
     e.extend_whitelisted_accounts(&e.owner, vec![users.bob.account_id()]).assert_success();
 
-    e.create_proposal(&users.bob, ProposalKind::FarmingReward { farm_list: vec!["ref<>celo".to_string(), "usn<>usdt".to_string()], total_reward: 2 }, "FarmingReward".to_string(), to_sec(e.current_time() + DAY_TS), 1000, 0).assert_success();
+    e.create_proposal(&users.bob, ProposalKind::FarmingReward { farm_list: vec!["noct.near|nref.near&2657".to_string(), "nusdt.near|nusdc.near|ndai.near&1910".to_string()], total_reward: 2 }, "FarmingReward".to_string(), to_sec(e.current_time() + DAY_TS), 1000, 0).assert_success();
 
     e.skip_time(DAY_SEC);
 
@@ -251,11 +243,9 @@ fn test_action_proposal_farming_reward_01(){
     }, VoteInfo{
         total_ballots: to_ve_token("200"),
         participants: 1
-    }, VoteInfo{
-        total_ballots: to_ve_token("400"),
-        participants: 0
     }], e.get_proposal(0).unwrap().votes);
     assert_eq!(2, e.get_proposal(0).unwrap().participants);
+    assert_eq!(to_ve_token("400"), e.get_proposal(0).unwrap().ve_amount_at_last_action);
 }
 
 #[test]
@@ -273,7 +263,7 @@ fn test_action_proposal_farming_reward_02(){
     
     e.extend_whitelisted_accounts(&e.owner, vec![users.bob.account_id()]).assert_success();
 
-    e.create_proposal(&users.bob, ProposalKind::FarmingReward { farm_list: vec!["ref<>celo".to_string(), "usn<>usdt".to_string()], total_reward: 2 }, "FarmingReward".to_string(), to_sec(e.current_time() + DAY_TS), 1000, 0).assert_success();
+    e.create_proposal(&users.bob, ProposalKind::FarmingReward { farm_list: vec!["noct.near|nref.near&2657".to_string(), "nusdt.near|nusdc.near|ndai.near&1910".to_string()], total_reward: 2 }, "FarmingReward".to_string(), to_sec(e.current_time() + DAY_TS), 1000, 0).assert_success();
 
     e.skip_time(DAY_SEC);
 
@@ -286,11 +276,9 @@ fn test_action_proposal_farming_reward_02(){
     }, VoteInfo{
         total_ballots: to_ve_token("200"),
         participants: 1
-    }, VoteInfo{
-        total_ballots: to_ve_token("600"),
-        participants: 0
     }], e.get_proposal(0).unwrap().votes);
     assert_eq!(2, e.get_proposal(0).unwrap().participants);
+    assert_eq!(to_ve_token("600"), e.get_proposal(0).unwrap().ve_amount_at_last_action);
 }
 
 #[test]
@@ -310,7 +298,7 @@ fn test_action_proposal_farming_reward_03(){
     
     e.extend_whitelisted_accounts(&e.owner, vec![users.bob.account_id()]).assert_success();
 
-    e.create_proposal(&users.bob, ProposalKind::FarmingReward { farm_list: vec!["ref<>celo".to_string(), "usn<>usdt".to_string(), "ref<>aurora".to_string()], total_reward: 3 }, "FarmingReward".to_string(), to_sec(e.current_time() + DAY_TS), 1000, 0).assert_success();
+    e.create_proposal(&users.bob, ProposalKind::FarmingReward { farm_list: vec!["noct.near|nref.near&2657".to_string(), "nusdt.near|nusdc.near|ndai.near&1910".to_string(), "usn.near|nusdt.near&3020".to_string()], total_reward: 3 }, "FarmingReward".to_string(), to_sec(e.current_time() + DAY_TS), 1000, 0).assert_success();
 
     e.skip_time(DAY_SEC);
 
@@ -327,11 +315,9 @@ fn test_action_proposal_farming_reward_03(){
     }, VoteInfo{
         total_ballots: to_ve_token("200"),
         participants: 1
-    }, VoteInfo{
-        total_ballots: to_ve_token("800"),
-        participants: 0
     }], e.get_proposal(0).unwrap().votes);
     assert_eq!(3, e.get_proposal(0).unwrap().participants);
+    assert_eq!(to_ve_token("800"), e.get_proposal(0).unwrap().ve_amount_at_last_action);
 }
 
 #[test]
@@ -351,7 +337,7 @@ fn test_action_proposal_farming_reward_04(){
     
     e.extend_whitelisted_accounts(&e.owner, vec![users.bob.account_id()]).assert_success();
 
-    e.create_proposal(&users.bob, ProposalKind::FarmingReward { farm_list: vec!["ref<>celo".to_string(), "usn<>usdt".to_string(), "ref<>aurora".to_string()], total_reward: 3 }, "FarmingReward".to_string(), to_sec(e.current_time() + DAY_TS), 1000, 0).assert_success();
+    e.create_proposal(&users.bob, ProposalKind::FarmingReward { farm_list: vec!["noct.near|nref.near&2657".to_string(), "nusdt.near|nusdc.near|ndai.near&1910".to_string(), "usn.near|nusdt.near&3020".to_string()], total_reward: 3 }, "FarmingReward".to_string(), to_sec(e.current_time() + DAY_TS), 1000, 0).assert_success();
 
     e.skip_time(DAY_SEC);
 
@@ -368,11 +354,9 @@ fn test_action_proposal_farming_reward_04(){
     }, VoteInfo{
         total_ballots: to_ve_token("200"),
         participants: 1
-    }, VoteInfo{
-        total_ballots: to_ve_token("700"),
-        participants: 0
     }], e.get_proposal(0).unwrap().votes);
     assert_eq!(3, e.get_proposal(0).unwrap().participants);
+    assert_eq!(to_ve_token("700"), e.get_proposal(0).unwrap().ve_amount_at_last_action);
 }
 
 #[test]
@@ -392,7 +376,7 @@ fn test_action_proposal_farming_reward_05(){
     
     e.extend_whitelisted_accounts(&e.owner, vec![users.bob.account_id()]).assert_success();
 
-    e.create_proposal(&users.bob, ProposalKind::FarmingReward { farm_list: vec!["ref<>celo".to_string(), "usn<>usdt".to_string(), "ref<>aurora".to_string()], total_reward: 10 }, "FarmingReward".to_string(), to_sec(e.current_time() + DAY_TS), 1000, 0).assert_success();
+    e.create_proposal(&users.bob, ProposalKind::FarmingReward { farm_list: vec!["noct.near|nref.near&2657".to_string(), "nusdt.near|nusdc.near|ndai.near&1910".to_string(), "usn.near|nusdt.near&3020".to_string()], total_reward: 10 }, "FarmingReward".to_string(), to_sec(e.current_time() + DAY_TS), 1000, 0).assert_success();
 
     e.skip_time(DAY_SEC);
 
@@ -409,11 +393,9 @@ fn test_action_proposal_farming_reward_05(){
     }, VoteInfo{
         total_ballots: to_ve_token("200"),
         participants: 1
-    }, VoteInfo{
-        total_ballots: to_ve_token("700"),
-        participants: 0
     }], e.get_proposal(0).unwrap().votes);
     assert_eq!(3, e.get_proposal(0).unwrap().participants);
+    assert_eq!(to_ve_token("700"), e.get_proposal(0).unwrap().ve_amount_at_last_action);
 }
 
 #[test]
@@ -428,7 +410,7 @@ fn test_action_cancel(){
     
     e.extend_whitelisted_accounts(&e.owner, vec![users.bob.account_id()]).assert_success();
 
-    e.create_proposal(&users.bob, ProposalKind::FarmingReward { farm_list: vec!["ref<>celo".to_string(), "usn<>usdt".to_string()], total_reward: 2 }, "FarmingReward".to_string(), to_sec(e.current_time() + DAY_TS), 1000, 0).assert_success();
+    e.create_proposal(&users.bob, ProposalKind::FarmingReward { farm_list: vec!["noct.near|nref.near&2657".to_string(), "nusdt.near|nusdc.near|ndai.near&1910".to_string()], total_reward: 2 }, "FarmingReward".to_string(), to_sec(e.current_time() + DAY_TS), 1000, 0).assert_success();
     e.create_proposal(&users.bob, ProposalKind::Poll { options: vec!["topic1".to_string(), "topic2".to_string()] }, "Poll".to_string(), to_sec(e.current_time() + DAY_TS), 1000, 0).assert_success();
     e.create_proposal(&users.bob, ProposalKind::Common, "Common".to_string(), to_sec(e.current_time() + DAY_TS), DEFAULT_MIN_PROPOSAL_VOTING_PERIOD_SEC, to_yocto("1")).assert_success();
 
@@ -444,20 +426,16 @@ fn test_action_cancel(){
     }, VoteInfo{
         total_ballots: 0,
         participants: 0
-    }, VoteInfo{
-        total_ballots: to_ve_token("200"),
-        participants: 0
     }], e.get_proposal(0).unwrap().votes);
+    assert_eq!(to_ve_token("200"), e.get_proposal(0).unwrap().ve_amount_at_last_action);
     assert_eq!(vec![VoteInfo{
         total_ballots: 0,
         participants: 0
     }, VoteInfo{
         total_ballots: to_ve_token("200"),
         participants: 1
-    }, VoteInfo{
-        total_ballots: to_ve_token("200"),
-        participants: 0
     }], e.get_proposal(1).unwrap().votes);
+    assert_eq!(to_ve_token("200"), e.get_proposal(1).unwrap().ve_amount_at_last_action);
     assert_eq!(vec![VoteInfo{
         total_ballots: 0,
         participants: 0
@@ -466,11 +444,9 @@ fn test_action_cancel(){
         participants: 1
     }, VoteInfo{
         total_ballots: 0,
-        participants: 0
-    }, VoteInfo{
-        total_ballots: to_ve_token("200"),
         participants: 0
     }], e.get_proposal(2).unwrap().votes);
+    assert_eq!(to_ve_token("200"), e.get_proposal(2).unwrap().ve_amount_at_last_action);
 
     let alice = e.get_account_info(&users.alice).unwrap();
     assert_eq!(to_yocto("100"), alice.lpt_amount);
@@ -498,10 +474,9 @@ fn test_action_cancel(){
     }, VoteInfo{
         total_ballots: 0,
         participants: 0
-    }, VoteInfo{
-        total_ballots: to_ve_token("200"),
-        participants: 0
     }], e.get_proposal(0).unwrap().votes);
+    assert_eq!(to_ve_token("200"), e.get_proposal(0).unwrap().ve_amount_at_last_action);
+
     assert_eq!(HashMap::from([(1, VoteDetail {
         action: Action::VotePoll { poll_id: 1 }, amount: to_ve_token("200")
     }), (2, VoteDetail {
@@ -518,10 +493,9 @@ fn test_action_cancel(){
     }, VoteInfo{
         total_ballots: 0,
         participants: 0
-    }, VoteInfo{
-        total_ballots: to_ve_token("200"),
-        participants: 0
     }], e.get_proposal(1).unwrap().votes);
+    assert_eq!(to_ve_token("200"), e.get_proposal(1).unwrap().ve_amount_at_last_action);
+
     assert_eq!(HashMap::from([(2, VoteDetail {
         action: Action::VoteReject, amount: to_ve_token("200")
     })]), e.get_vote_detail(&users.alice));

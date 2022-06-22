@@ -12,17 +12,21 @@ pub struct Tokens {
     pub ndai: UserAccount,
     pub nusdt: UserAccount,
     pub nusdc: UserAccount,
+    pub nskyward: UserAccount,
+    pub noct: UserAccount
 }
 
 impl Tokens {
     pub fn init(e: &Env) -> Self {
         Self {
             wnear: init_token(e, &account_id("wrap.near"), 24),
-            nref: init_token(e, &account_id("ref.near"), 18),
+            nref: init_token(e, &account_id("nref.near"), 18),
             neth: init_token(e, &account_id("neth.near"), 18),
-            ndai: init_token(e, &account_id("dai.near"), 18),
+            ndai: init_token(e, &account_id("ndai.near"), 18),
             nusdt: init_token(e, &account_id("nusdt.near"), 6),
             nusdc: init_token(e, &account_id("nusdc.near"), 6),
+            nskyward: init_token(e, &account_id("nskyward.near"), 18),
+            noct: init_token(e, &account_id("noct.near"), 18),
         }
     }
 }

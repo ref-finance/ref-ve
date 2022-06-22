@@ -77,10 +77,8 @@ fn test_withdraw_lpt() {
     }, VoteInfo{
         total_ballots: 0,
         participants: 0
-    }, VoteInfo{
-        total_ballots: to_ve_token("200"),
-        participants: 0
     }], e.get_proposal(0).unwrap().votes);
+    assert_eq!(to_ve_token("200"), e.get_proposal(0).unwrap().ve_amount_at_last_action);
     assert_eq!(HashMap::from([(0, VoteDetail {
         action: Action::VoteApprove, amount: to_ve_token("200")
     })]), e.get_vote_detail(&users.alice));
@@ -97,10 +95,8 @@ fn test_withdraw_lpt() {
     }, VoteInfo{
         total_ballots: 0,
         participants: 0
-    }, VoteInfo{
-        total_ballots: to_ve_token("100"),
-        participants: 0
     }], e.get_proposal(0).unwrap().votes);
+    assert_eq!(to_ve_token("100"), e.get_proposal(0).unwrap().ve_amount_at_last_action);
     e.withdraw_lpt(&users.alice, None).assert_success();
     assert_eq!(vec![VoteInfo{
         total_ballots: 0,
@@ -111,10 +107,8 @@ fn test_withdraw_lpt() {
     }, VoteInfo{
         total_ballots: 0,
         participants: 0
-    }, VoteInfo{
-        total_ballots: 0,
-        participants: 0
     }], e.get_proposal(0).unwrap().votes);
+    assert_eq!(0, e.get_proposal(0).unwrap().ve_amount_at_last_action);
     assert_eq!(HashMap::new(), e.get_vote_detail(&users.alice));
     assert_eq!(HashMap::new(), e.get_vote_detail_history(&users.alice));
 }

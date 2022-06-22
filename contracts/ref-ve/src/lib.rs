@@ -50,6 +50,7 @@ use near_sdk::{
     PromiseResult, Timestamp, log
 };
 use std::collections::HashMap;
+use std::collections::HashSet;
 
 #[derive(BorshStorageKey, BorshSerialize)]
 pub(crate) enum StorageKeys {
@@ -103,6 +104,7 @@ pub struct ContractData {
     pub owner_id: AccountId,
     pub operators: UnorderedSet<AccountId>,
     pub whitelisted_accounts: UnorderedSet<AccountId>,
+    pub whitelisted_incentive_tokens: HashSet<AccountId>,
 
     pub config: LazyOption<Config>,
 
@@ -157,6 +159,7 @@ impl Contract {
                 owner_id,
                 operators: UnorderedSet::new(StorageKeys::Operator),
                 whitelisted_accounts: UnorderedSet::new(StorageKeys::WhitelistedAccounts),
+                whitelisted_incentive_tokens: HashSet::new(),
                 config: LazyOption::new(StorageKeys::Config, Some(&Config::default())),
                 symbol,
                 lptoken_contract_id,

@@ -6,7 +6,7 @@ use near_sdk::{serde_json, PromiseOrValue};
 #[derive(Serialize, Deserialize)]
 #[serde(crate = "near_sdk::serde")]
 enum FTokenReceiverMessage {
-    Reward { proposal_id: u32, incentive_key: u32, incentive_type: IncentiveType }
+    Reward { proposal_id: u32, incentive_key: u32 }
 }
 
 #[near_bindgen]
@@ -22,13 +22,14 @@ impl FungibleTokenReceiver for Contract {
         let message =
             serde_json::from_str::<FTokenReceiverMessage>(&msg).expect(E500_INVALID_MSG);
         match message {
-            FTokenReceiverMessage::Reward { proposal_id, incentive_key, incentive_type } => {
+            FTokenReceiverMessage::Reward { proposal_id, incentive_key } => {
 
-                let (total_amount, start_at) = self.internal_deposit_reward(proposal_id, incentive_key, incentive_type, &token_id, amount);
+                let (total_amount, start_at) = self.internal_deposit_reward(proposal_id, incentive_key, &token_id, amount);
 
                 Event::RewardDeposit {
                     caller_id: &sender_id,
                     proposal_id,
+                    incentive_key,
                     token_id: &token_id,
                     deposit_amount: &U128(amount),
                     total_amount: &U128(total_amount),

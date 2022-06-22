@@ -32,6 +32,8 @@ pub const E405_PROPOSAL_NOT_SUPPORT_INCENTIVE: &str = "E405: proposal not suppor
 pub const E406_EXPIRED_PROPOSAL: &str = "E406: expired proposal";
 
 pub const E500_INVALID_MSG: &str = "E500: invalid msg";
+pub const E501_INVALID_FARM_INFO: &str = "E501: invalid farm info";
+pub const E502_INVALID_TOKEN_ID: &str = "E502: invalid token id";
 
 pub const E600_MFT_INVALID_LPTOKEN_ID: &str = "E600: MFT lptoken id is invalid";
 pub const E601_MFT_INVALID_LPTOKEN_CONTRACT: &str = "E601: MFT lptoken contract id is invalid";

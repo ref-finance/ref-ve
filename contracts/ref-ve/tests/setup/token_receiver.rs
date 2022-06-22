@@ -11,7 +11,6 @@ impl Env {
         amount: Balance,
         proposal_id: u32,
         incentive_key: u32,
-        incentive_type: String,
     ) -> ExecutionResult {
         user.call(
             token.account_id.clone(),
@@ -19,7 +18,7 @@ impl Env {
             &json!({
                 "receiver_id": self.ve_contract.user_account.account_id(),
                 "amount": U128::from(amount),
-                "msg": format!("{{\"Reward\": {{\"proposal_id\": {}, \"incentive_key\": {}, \"incentive_type\": \"{}\"}}}}", proposal_id, incentive_key, incentive_type),
+                "msg": format!("{{\"Reward\": {{\"proposal_id\": {}, \"incentive_key\": {}}}}}", proposal_id, incentive_key),
             })
             .to_string()
             .into_bytes(),
