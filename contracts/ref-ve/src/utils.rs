@@ -1,6 +1,10 @@
+use std::collections::HashSet;
+
 // use near_sdk::serde::{Deserialize, Serialize};
-use near_sdk::{Balance, Timestamp, Gas, ext_contract};
+use near_sdk::{env, AccountId, Balance, Timestamp, Gas, ext_contract};
 use near_sdk::json_types::U128;
+
+use crate::errors::{E501_INVALID_FARM_INFO, E502_INVALID_TOKEN_ID};
 
 uint::construct_uint!(
     pub struct U256(4);
@@ -144,6 +148,11 @@ pub(crate) fn u128_ratio(a: u128, num: u128, denom: u128) -> Balance {
     (U256::from(a) * U256::from(num) / U256::from(denom)).as_u128()
 }
 
+pub fn extra_incentive_tokens(farm_info: String) -> HashSet<AccountId> {
+    let (farm_tokens_str, _) = farm_info.split_once('&').unwrap_or_else(|| env::panic_str(E501_INVALID_FARM_INFO));
+    farm_tokens_str.split('|').into_iter().map(|a| a.parse().unwrap_or_else(|_| env::panic_str(E502_INVALID_TOKEN_ID))).collect()
+}
+
 #[ext_contract(ext_multi_fungible_token)]
 pub trait MultiFungibleToken {
     fn mft_transfer(
@@ -170,4 +179,20 @@ pub trait TokenPostActions {
     fn callback_withdraw_lpt_lostfound(&mut self, receiver_id: AccountId, amount: U128);
 
     fn callback_withdraw_lpt_slashed(&mut self, sender_id: AccountId, amount: U128);
+}
+
+#[cfg(test)]
+mod tests {
+    use std::collections::HashSet;
+    use super::*;
+
+    #[test]
+    fn test_extra_incentive_tokens() {
+        assert_eq!(HashSet::from(
+            ["noct.near".parse().unwrap(), "nref.near".parse().unwrap()]), 
+            extra_incentive_tokens("noct.near|nref.near&2657".to_string()));
+        assert_eq!(HashSet::from(
+            ["nusdt.near".parse().unwrap(), "nusdc.near".parse().unwrap(), "ndai.near".parse().unwrap()]), 
+            extra_incentive_tokens("nusdt.near|nusdc.near|ndai.near&1910".to_string()));
+    }
 }
