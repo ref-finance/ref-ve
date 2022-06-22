@@ -21,13 +21,13 @@ impl Contract {
 
         let votes: Vec<VoteInfo> = match &kind {
             ProposalKind::FarmingReward{ farm_list, .. } => {
-                vec![Default::default(); farm_list.len() + 1]
+                vec![Default::default(); farm_list.len()]
             },
             ProposalKind::Poll{ options, .. } => {
-                vec![Default::default(); options.len() + 1]
+                vec![Default::default(); options.len()]
             },
             ProposalKind::Common{ .. } => {
-                vec![Default::default(); 4]
+                vec![Default::default(); 3]
             }
         };
 
@@ -38,6 +38,7 @@ impl Contract {
             proposer: proposer.clone(),
             kind: kind.clone(),
             votes,
+            ve_amount_at_last_action: self.data().cur_total_ve_lpt,
             incentive: HashMap::new(),
             start_at: to_nano(start_at),
             end_at: to_nano(start_at + duration_sec),
@@ -74,11 +75,13 @@ impl Contract {
                 self.data_mut().proposals.remove(&proposal_id);
 
                 for item in proposal.incentive.values() {
-                    let current_amount = self.data().removed_proposal_assets.get(&item.incentive_token_id).unwrap_or(0_u128);
-                    self.data_mut().removed_proposal_assets.insert(
-                        &item.incentive_token_id,
-                        &(item.incentive_amount + current_amount),
-                    );
+                    for index in 0..item.incentive_token_ids.len() {
+                        let current_amount = self.data().removed_proposal_assets.get(&item.incentive_token_ids[index]).unwrap_or(0_u128);
+                        self.data_mut().removed_proposal_assets.insert(
+                            &item.incentive_token_ids[index],
+                            &(item.incentive_amounts[index] + current_amount),
+                        );
+                    }
                 }
 
                 Event::ProposalRemove {
@@ -122,7 +125,7 @@ impl Contract {
 
         let vote_detail = self.internal_account_cancel_vote(&voter, proposal_id);
 
-        self.internal_cancel_vote(proposal_id, &vote_detail.action, vote_detail.amount);
+        self.internal_cancel_vote(proposal_id, &vote_detail);
 
         Event::ActionCancel {
             voter_id: &voter,

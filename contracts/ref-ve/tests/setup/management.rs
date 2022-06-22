@@ -32,6 +32,36 @@ impl Env {
             )
     }
 
+    pub fn extend_whitelisted_incentive_tokens(
+        &self,
+        operator: &UserAccount,
+        tokens: Vec<AccountId>
+    ) -> ExecutionResult {
+        operator
+            .function_call(
+                self.ve_contract.contract.extend_whitelisted_incentive_tokens(
+                    tokens
+                ),
+                MAX_GAS.0,
+                1,
+            )
+    }
+
+    pub fn remove_whitelisted_incentive_tokens(
+        &self,
+        operator: &UserAccount,
+        tokens: Vec<AccountId>
+    ) -> ExecutionResult {
+        operator
+            .function_call(
+                self.ve_contract.contract.remove_whitelisted_incentive_tokens(
+                    tokens
+                ),
+                MAX_GAS.0,
+                1,
+            )
+    }
+
     pub fn modify_min_start_vote_offset_sec(
         &self,
         operator: &UserAccount,

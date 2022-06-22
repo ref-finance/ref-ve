@@ -101,12 +101,12 @@ Note:
 are executed by calling reward token's `ft_transfer_call ` with the following msg:
 ```rust
 enum FTokenReceiverMessage {
-    Reward { proposal_id: u32, incentive_key: u32, incentive_type: IncentiveType }
+    Reward { proposal_id: u32, incentive_key: u32 }
 }
 ```
 Eg:
 ```bash
-near call ref.$FT ft_transfer_call '{"receiver_id": "'$VE'", "amount": "36'$ZERO18'", "msg": "{\"Reward\":{\"proposal_id\":0, \"incentive_key\": 0, \"incentive_type\": \"Proportion\"}}"}' --account_id=u1.testnet --depositYocto=1 --gas=100$TGAS || true
+near call ref.$FT ft_transfer_call '{"receiver_id": "'$VE'", "amount": "36'$ZERO18'", "msg": "{\"Reward\":{\"proposal_id\":0, \"incentive_key\": 0}}"}' --account_id=u1.testnet --depositYocto=1 --gas=100$TGAS || true
 ```
 ### Proposal
 
@@ -122,24 +122,20 @@ pub enum ProposalKind {
     },
     Common,
 }
-pub enum IncentiveType{
-    Evenly,
-    Proportion
-}
+
 pub fn create_proposal(
         &mut self,
         kind: ProposalKind,
         description: String,
         start_at: u32,
         duration_sec: u32,
-        incentive_detail: Option<(AccountId, IncentiveType)>
     ) -> u32
 ```
 Eg:
 
 create farming reward proposal
 ```bash
-near call $VE create_proposal '{"kind": {"FarmingReward":{"farm_list":["ref<>celo", "usn<>usdt"],"total_reward": 200000}}, "description": "FarmingReward Proposal", "start_at": 1655736586, "duration_sec": 86400 }' --account_id=u1.testnet 
+near call $VE create_proposal '{"kind": {"FarmingReward":{"farm_list":["noct.near|nskyward.near", "nusdt.near|nusdc.near|ndai.near"],"total_reward": 200000}}, "description": "FarmingReward Proposal", "start_at": 1655736586, "duration_sec": 86400 }' --account_id=u1.testnet 
 ```
 create common proposal
 ```bash
@@ -209,10 +205,14 @@ Note:
 pub fn extend_whitelisted_accounts(&mut self, accounts: Vec<AccountId>);
 pub fn remove_whitelisted_accounts(&mut self, accounts: Vec<AccountId>);
 
+pub fn extend_whitelisted_incentive_tokens(&mut self, tokens: Vec<AccountId>)
+pub fn remove_whitelisted_incentive_tokens(&mut self, tokens: Vec<AccountId>)
+
 pub fn modify_min_start_vote_offset_sec(&mut self, min_start_vote_offset_sec: u32);
 pub fn modify_locking_policy(&mut self, min_duration: DurationSec, max_duration: DurationSec, max_ratio: u32);
 
 pub fn return_lpt_lostfound(&mut self, account_id: AccountId, amount: U128) -> Promise;
+pub fn return_removed_proposal_assets(&mut self, account_id: AccountId, token_id: AccountId, amount: U128) -> Promise
 ```
 
 ### All Views
@@ -224,6 +224,7 @@ near view $VE get_metadata
   owner_id: 'ref-ve.testnet',
   operators: [],
   whitelisted_accounts: [],
+  whitelisted_incentive_tokens: [],
   lptoken_contract_id: 'exchange.ref-dev.testnet',
   lptoken_id: ':269',
   lptoken_decimals: 24,
@@ -251,26 +252,24 @@ near view $VE list_proposals
     id: 0,
     proposer: 'user_account_id',
     kind: {
-      FarmingReward: { farm_list: [ 'ref<>celo', 'usn<>usdt' ], total_reward: 200000 }
+      FarmingReward: { farm_list: [ 'noct.near|nskyward.near', 'nusdt.near|nusdc.near|ndai.near' ], total_reward: 200000 }
     },
     description: "FarmingReward Proposal",
     votes: [
       { total_ballots: '0', participants: 0 },
       { total_ballots: '0', participants: 0 },
-      { total_ballots: '0', participants: 0 }
     ],
+    ve_amount_at_last_action: '0',
     start_at: '1654650000000000000',
     end_at: '1654736400000000000',
     participants: '0',
     incentive: {
       '0': {
-        incentive_type: 'Proportion',
         incentive_token_id: 'token_id',
         incentive_amount: '100000000000000000000',
         claimed_amount: '0'
       },
       '1': {
-        incentive_type: 'Proportion',
         incentive_token_id: 'token_id',
         incentive_amount: '100000000000000000000',
         claimed_amount: '0'
@@ -288,8 +287,8 @@ near view $VE list_proposals
       { total_ballots: '0', participants: 0 },
       { total_ballots: '0', participants: 0 },
       { total_ballots: '0', participants: 0 },
-      { total_ballots: '0', participants: 0 }
     ],
+    ve_amount_at_last_action: '0',
     start_at: '1654650000000000000',
     end_at: '1659834000000000000',
     participants: '0',
@@ -305,8 +304,8 @@ near view $VE list_proposals
     votes: [
       { total_ballots: '0', participants: 0 },
       { total_ballots: '0', participants: 0 },
-      { total_ballots: '0', participants: 0 }
     ],
+    ve_amount_at_last_action: '0',
     start_at: '1654650000000000000',
     end_at: '1659834000000000000',
     participants: '0',
@@ -322,14 +321,13 @@ near view $VE list_proposals
     votes: [
       { total_ballots: '0', participants: 0 },
       { total_ballots: '0', participants: 0 },
-      { total_ballots: '0', participants: 0 }
     ],
+    ve_amount_at_last_action: '0',
     start_at: '1654660800000000000',
     end_at: '1659844800000000000',
     participants: '0',
     incentive: {
       '0': {
-        incentive_type: 'Proportion',
         incentive_token_id: 'token_id',
         incentive_amount: '100000000000000000000',
         claimed_amount: '0'
@@ -345,26 +343,24 @@ near view $VE get_proposal '{"proposal_id": 0}'
     id: 0,
     proposer: 'user_account_id',
     kind: {
-      FarmingReward: { farm_list: [ 'ref<>celo', 'usn<>usdt' ], total_reward: 200000 }
+      FarmingReward: { farm_list: [ 'noct.near|nskyward.near', 'nusdt.near|nusdc.near|ndai.near' ], total_reward: 200000 }
     },
     description: "FarmingReward Proposal",
     votes: [
       { total_ballots: '0', participants: 0 },
       { total_ballots: '0', participants: 0 },
-      { total_ballots: '0', participants: 0 }
     ],
+    ve_amount_at_last_action: '0',
     start_at: '1654650000000000000',
     end_at: '1654736400000000000',
     participants: '0',
     incentive: {
       '0': {
-        incentive_type: 'Proportion',
         incentive_token_id: 'token_id',
         incentive_amount: '100000000000000000000',
         claimed_amount: '0'
       },
       '1': {
-        incentive_type: 'Proportion',
         incentive_token_id: 'token_id',
         incentive_amount: '100000000000000000000',
         claimed_amount: '0'

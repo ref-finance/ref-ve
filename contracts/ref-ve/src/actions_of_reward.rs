@@ -1,3 +1,5 @@
+use std::iter::FromIterator;
+
 use crate::*;
 use near_contract_standards::fungible_token::core_impl::ext_fungible_token;
 
@@ -21,8 +23,8 @@ impl Contract {
         let mut proposal = self.internal_unwrap_proposal(proposal_id);
         if proposal.status == Some(ProposalStatus::Expired) {
             if let Some(vote_detail) = account.proposals.remove(&proposal_id) {
-                if let Some((token_id, reward_amount)) = proposal.claim_reward(&vote_detail) {
-                    account.add_rewards(&HashMap::from([(token_id, reward_amount)]));
+                if let Some(reward_details) = proposal.claim_reward(&vote_detail) {
+                    account.add_rewards(&HashMap::from_iter(reward_details));
                 }
                 self.data_mut().proposals.insert(&proposal_id, &proposal.into());
                 account.proposals_history.insert(&proposal_id, &vote_detail);
@@ -116,8 +118,10 @@ impl Contract {
         account.proposals.retain(|proposal_id, vote_detail| {
             let mut proposal = self.internal_unwrap_proposal(*proposal_id);
             if proposal.status == Some(ProposalStatus::Expired) {
-                if let Some((token_id, reward_amount)) = proposal.claim_reward(vote_detail){
-                    rewards.insert(token_id, reward_amount);
+                if let Some(reward_details) = proposal.claim_reward(vote_detail){
+                    reward_details.into_iter().for_each(|(reward_token, reward_amount)| {
+                        rewards.insert(reward_token.clone(), reward_amount + rewards.get(&reward_token).unwrap_or(&0_u128));
+                    });
                 }
                 history.insert(*proposal_id, vote_detail.clone());
                 self.data_mut().proposals.insert(proposal_id, &proposal.into());
@@ -144,9 +148,10 @@ impl Contract {
                 };
                 if let Some(incentive) = proposal.incentive.get(&incentive_key) {
                     let votes_total_amount = proposal.get_votes_total_amount_for_reward_calc(incentive_key);
-                    let participants = proposal.get_participants_for_reward_calc(incentive_key);
-                    let (token_id, reward_amount) = incentive.calc_reward(participants, vote_detail.amount, votes_total_amount);
-                    rewards.insert(token_id.clone(), reward_amount);
+                    let reward_details = incentive.calc_reward(vote_detail.amount, votes_total_amount);
+                    reward_details.into_iter().for_each(|(reward_token, reward_amount)| {
+                        rewards.insert(reward_token.clone(), reward_amount + rewards.get(&reward_token).unwrap_or(&0_u128));
+                    });
                 }
             }
         }

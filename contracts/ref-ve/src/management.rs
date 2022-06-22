@@ -13,13 +13,30 @@ impl Contract {
         }
     }
 
-    /// Remove operators. Only can be called by owner.
     #[payable]
     pub fn remove_whitelisted_accounts(&mut self, accounts: Vec<AccountId>) {
         assert_one_yocto();
         require!(self.is_owner_or_operators(), E002_NOT_ALLOWED);
         for account in accounts {
             self.data_mut().whitelisted_accounts.remove(&account);
+        }
+    }
+
+    #[payable]
+    pub fn extend_whitelisted_incentive_tokens(&mut self, tokens: Vec<AccountId>) {
+        assert_one_yocto();
+        require!(self.is_owner_or_operators(), E002_NOT_ALLOWED);
+        for token in tokens {
+            self.data_mut().whitelisted_incentive_tokens.insert(token);
+        }
+    }
+
+    #[payable]
+    pub fn remove_whitelisted_incentive_tokens(&mut self, tokens: Vec<AccountId>) {
+        assert_one_yocto();
+        require!(self.is_owner_or_operators(), E002_NOT_ALLOWED);
+        for token in tokens {
+            self.data_mut().whitelisted_incentive_tokens.remove(&token);
         }
     }
 

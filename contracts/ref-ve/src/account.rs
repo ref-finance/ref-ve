@@ -145,8 +145,10 @@ impl Contract {
         account.proposals.retain(|proposal_id, vote_detail| {
             let mut proposal = self.internal_unwrap_proposal(*proposal_id);
             if proposal.status == Some(ProposalStatus::Expired) {
-                if let Some((token_id, reward_amount)) = proposal.claim_reward(vote_detail) {
-                    rewards.insert(token_id, reward_amount);
+                if let Some(reward_details) = proposal.claim_reward(vote_detail) {
+                    reward_details.into_iter().for_each(|(reward_token, reward_amount)| {
+                        rewards.insert(reward_token.clone(), reward_amount + rewards.get(&reward_token).unwrap_or(&0_u128));
+                    });
                 }
                 self.data_mut().proposals.insert(proposal_id, &proposal.into());
                 history.insert(*proposal_id, vote_detail.clone());
@@ -154,7 +156,7 @@ impl Contract {
             } else {
                 let mut is_retain = true;
                 if diff_ve_lpt_amount > 0 {
-                    proposal.update_votes(&vote_detail.action, diff_ve_lpt_amount, self.data().cur_total_ve_lpt, is_increased);
+                    proposal.update_votes(&vote_detail.action, diff_ve_lpt_amount, is_increased);
                     if is_increased {
                         vote_detail.amount += diff_ve_lpt_amount;
                     } else if vote_detail.amount == diff_ve_lpt_amount {
@@ -164,6 +166,7 @@ impl Contract {
                     } else {
                         vote_detail.amount -= diff_ve_lpt_amount;
                     }
+                    proposal.ve_amount_at_last_action = self.data().cur_total_ve_lpt;
                     self.data_mut().proposals.insert(proposal_id, &proposal.into());
                 }
                 is_retain

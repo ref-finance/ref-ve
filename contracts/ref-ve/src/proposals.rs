@@ -53,6 +53,8 @@ pub struct Proposal {
     pub kind: ProposalKind,
     /// Result of proposal with relevant information.
     pub votes: Vec<VoteInfo>,
+    #[serde(with = "u128_dec_format")]
+    pub ve_amount_at_last_action: u128,
     /// the nano seconds of voting begin time,
     /// before this time, proposer can remove this immediately.
     #[serde(with = "u64_dec_format")]

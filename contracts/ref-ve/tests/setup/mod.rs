@@ -10,7 +10,7 @@ pub use near_sdk_sim::{
 use mock_mft::ContractContract as MockMultiFungibleToken;
 
 pub use ref_ve::{ContractContract as VeContract,
-    Metadata, Proposal, ProposalKind, IncentiveType, Action, Account, FarmingReward, Config, VoteDetail, AccountInfo, VoteInfo
+    Metadata, Proposal, ProposalKind, Action, Account, FarmingReward, Config, VoteDetail, AccountInfo, VoteInfo
 };
 
 pub use ref_ve::{
