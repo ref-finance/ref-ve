@@ -118,13 +118,13 @@ mod tests {
     fn event_proposal_create() {
         let proposer_id = &alice();
         let proposal_id = 0;
-        let kind = &format!("{:?}", ProposalKind::FarmingReward{ farm_list: vec!["noct.near|nskyward.near".to_string(), "nusdt.near|nusdc.near|ndai.near".to_string()], total_reward: 2});
+        let kind = &format!("{:?}", ProposalKind::FarmingReward{ farm_list: vec!["noct.near|nref.near&2657".to_string(), "nusdt.near|nusdc.near|ndai.near&1910".to_string()], total_reward: 2});
         let start_at = 1000_u64;
         let duration_sec = 500_u32;
         Event::ProposalCreate { proposer_id, proposal_id, kind, start_at, duration_sec }.emit();
         assert_eq!(
             test_utils::get_logs()[0],
-            r#"EVENT_JSON:{"standard":"ref-ve","version":"1.0.0","event":"proposal_create","data":[{"proposer_id":"alice","proposal_id":0,"kind":"FarmingReward { farm_list: [\"noct.near|nskyward.near\", \"nusdt.near|nusdc.near|ndai.near\"], total_reward: 2 }","start_at":1000,"duration_sec":500}]}"#
+            r#"EVENT_JSON:{"standard":"ref-ve","version":"1.0.0","event":"proposal_create","data":[{"proposer_id":"alice","proposal_id":0,"kind":"FarmingReward { farm_list: [\"noct.near|nref.near&2657\", \"nusdt.near|nusdc.near|ndai.near&1910\"], total_reward: 2 }","start_at":1000,"duration_sec":500}]}"#
         );
     }
 

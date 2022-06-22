@@ -135,7 +135,7 @@ Eg:
 
 create farming reward proposal
 ```bash
-near call $VE create_proposal '{"kind": {"FarmingReward":{"farm_list":["noct.near|nskyward.near", "nusdt.near|nusdc.near|ndai.near"],"total_reward": 200000}}, "description": "FarmingReward Proposal", "start_at": 1655736586, "duration_sec": 86400 }' --account_id=u1.testnet 
+near call $VE create_proposal '{"kind": {"FarmingReward":{"farm_list":["noct.near|nref.near&2657", "nusdt.near|nusdc.near|ndai.near&1910"],"total_reward": 200000}}, "description": "FarmingReward Proposal", "start_at": 1655736586, "duration_sec": 86400 }' --account_id=u1.testnet 
 ```
 create common proposal
 ```bash
@@ -252,7 +252,7 @@ near view $VE list_proposals
     id: 0,
     proposer: 'user_account_id',
     kind: {
-      FarmingReward: { farm_list: [ 'noct.near|nskyward.near', 'nusdt.near|nusdc.near|ndai.near' ], total_reward: 200000 }
+      FarmingReward: { farm_list: [ 'noct.near|nref.near&2657', 'nusdt.near|nusdc.near|ndai.near&1910' ], total_reward: 200000 }
     },
     description: "FarmingReward Proposal",
     votes: [
@@ -343,7 +343,7 @@ near view $VE get_proposal '{"proposal_id": 0}'
     id: 0,
     proposer: 'user_account_id',
     kind: {
-      FarmingReward: { farm_list: [ 'noct.near|nskyward.near', 'nusdt.near|nusdc.near|ndai.near' ], total_reward: 200000 }
+      FarmingReward: { farm_list: [ 'noct.near|nref.near&2657', 'nusdt.near|nusdc.near|ndai.near&1910' ], total_reward: 200000 }
     },
     description: "FarmingReward Proposal",
     votes: [

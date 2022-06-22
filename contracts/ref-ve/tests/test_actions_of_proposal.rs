@@ -77,7 +77,7 @@ fn test_action_proposal(){
 
     e.extend_whitelisted_accounts(&e.owner, vec![users.bob.account_id()]).assert_success();
     
-    e.create_proposal(&users.bob, ProposalKind::FarmingReward { farm_list: vec!["noct.near|nskyward.near".to_string(), "nusdt.near|nusdc.near|ndai.near".to_string()], total_reward: 2 }, "FarmingReward".to_string(), to_sec(e.current_time() + DAY_TS), 1000, 0).assert_success();
+    e.create_proposal(&users.bob, ProposalKind::FarmingReward { farm_list: vec!["noct.near|nref.near&2657".to_string(), "nusdt.near|nusdc.near|ndai.near&1910".to_string()], total_reward: 2 }, "FarmingReward".to_string(), to_sec(e.current_time() + DAY_TS), 1000, 0).assert_success();
     e.create_proposal(&users.bob, ProposalKind::Poll { options: vec!["topic1".to_string(), "topic2".to_string()] }, "Poll".to_string(), to_sec(e.current_time() + DAY_TS), 1000, 0).assert_success();
     e.create_proposal(&users.bob, ProposalKind::Common, "Common".to_string(), to_sec(e.current_time() + DAY_TS), DEFAULT_MIN_PROPOSAL_VOTING_PERIOD_SEC, to_yocto("1")).assert_success();
 
@@ -230,7 +230,7 @@ fn test_action_proposal_farming_reward_01(){
     
     e.extend_whitelisted_accounts(&e.owner, vec![users.bob.account_id()]).assert_success();
 
-    e.create_proposal(&users.bob, ProposalKind::FarmingReward { farm_list: vec!["noct.near|nskyward.near".to_string(), "nusdt.near|nusdc.near|ndai.near".to_string()], total_reward: 2 }, "FarmingReward".to_string(), to_sec(e.current_time() + DAY_TS), 1000, 0).assert_success();
+    e.create_proposal(&users.bob, ProposalKind::FarmingReward { farm_list: vec!["noct.near|nref.near&2657".to_string(), "nusdt.near|nusdc.near|ndai.near&1910".to_string()], total_reward: 2 }, "FarmingReward".to_string(), to_sec(e.current_time() + DAY_TS), 1000, 0).assert_success();
 
     e.skip_time(DAY_SEC);
 
@@ -263,7 +263,7 @@ fn test_action_proposal_farming_reward_02(){
     
     e.extend_whitelisted_accounts(&e.owner, vec![users.bob.account_id()]).assert_success();
 
-    e.create_proposal(&users.bob, ProposalKind::FarmingReward { farm_list: vec!["noct.near|nskyward.near".to_string(), "nusdt.near|nusdc.near|ndai.near".to_string()], total_reward: 2 }, "FarmingReward".to_string(), to_sec(e.current_time() + DAY_TS), 1000, 0).assert_success();
+    e.create_proposal(&users.bob, ProposalKind::FarmingReward { farm_list: vec!["noct.near|nref.near&2657".to_string(), "nusdt.near|nusdc.near|ndai.near&1910".to_string()], total_reward: 2 }, "FarmingReward".to_string(), to_sec(e.current_time() + DAY_TS), 1000, 0).assert_success();
 
     e.skip_time(DAY_SEC);
 
@@ -298,7 +298,7 @@ fn test_action_proposal_farming_reward_03(){
     
     e.extend_whitelisted_accounts(&e.owner, vec![users.bob.account_id()]).assert_success();
 
-    e.create_proposal(&users.bob, ProposalKind::FarmingReward { farm_list: vec!["noct.near|nskyward.near".to_string(), "nusdt.near|nusdc.near|ndai.near".to_string(), "usn.near|nusdt.near".to_string()], total_reward: 3 }, "FarmingReward".to_string(), to_sec(e.current_time() + DAY_TS), 1000, 0).assert_success();
+    e.create_proposal(&users.bob, ProposalKind::FarmingReward { farm_list: vec!["noct.near|nref.near&2657".to_string(), "nusdt.near|nusdc.near|ndai.near&1910".to_string(), "usn.near|nusdt.near&3020".to_string()], total_reward: 3 }, "FarmingReward".to_string(), to_sec(e.current_time() + DAY_TS), 1000, 0).assert_success();
 
     e.skip_time(DAY_SEC);
 
@@ -337,7 +337,7 @@ fn test_action_proposal_farming_reward_04(){
     
     e.extend_whitelisted_accounts(&e.owner, vec![users.bob.account_id()]).assert_success();
 
-    e.create_proposal(&users.bob, ProposalKind::FarmingReward { farm_list: vec!["noct.near|nskyward.near".to_string(), "nusdt.near|nusdc.near|ndai.near".to_string(), "usn.near|nusdt.near".to_string()], total_reward: 3 }, "FarmingReward".to_string(), to_sec(e.current_time() + DAY_TS), 1000, 0).assert_success();
+    e.create_proposal(&users.bob, ProposalKind::FarmingReward { farm_list: vec!["noct.near|nref.near&2657".to_string(), "nusdt.near|nusdc.near|ndai.near&1910".to_string(), "usn.near|nusdt.near&3020".to_string()], total_reward: 3 }, "FarmingReward".to_string(), to_sec(e.current_time() + DAY_TS), 1000, 0).assert_success();
 
     e.skip_time(DAY_SEC);
 
@@ -376,7 +376,7 @@ fn test_action_proposal_farming_reward_05(){
     
     e.extend_whitelisted_accounts(&e.owner, vec![users.bob.account_id()]).assert_success();
 
-    e.create_proposal(&users.bob, ProposalKind::FarmingReward { farm_list: vec!["noct.near|nskyward.near".to_string(), "nusdt.near|nusdc.near|ndai.near".to_string(), "usn.near|nusdt.near".to_string()], total_reward: 10 }, "FarmingReward".to_string(), to_sec(e.current_time() + DAY_TS), 1000, 0).assert_success();
+    e.create_proposal(&users.bob, ProposalKind::FarmingReward { farm_list: vec!["noct.near|nref.near&2657".to_string(), "nusdt.near|nusdc.near|ndai.near&1910".to_string(), "usn.near|nusdt.near&3020".to_string()], total_reward: 10 }, "FarmingReward".to_string(), to_sec(e.current_time() + DAY_TS), 1000, 0).assert_success();
 
     e.skip_time(DAY_SEC);
 
@@ -410,7 +410,7 @@ fn test_action_cancel(){
     
     e.extend_whitelisted_accounts(&e.owner, vec![users.bob.account_id()]).assert_success();
 
-    e.create_proposal(&users.bob, ProposalKind::FarmingReward { farm_list: vec!["noct.near|nskyward.near".to_string(), "nusdt.near|nusdc.near|ndai.near".to_string()], total_reward: 2 }, "FarmingReward".to_string(), to_sec(e.current_time() + DAY_TS), 1000, 0).assert_success();
+    e.create_proposal(&users.bob, ProposalKind::FarmingReward { farm_list: vec!["noct.near|nref.near&2657".to_string(), "nusdt.near|nusdc.near|ndai.near&1910".to_string()], total_reward: 2 }, "FarmingReward".to_string(), to_sec(e.current_time() + DAY_TS), 1000, 0).assert_success();
     e.create_proposal(&users.bob, ProposalKind::Poll { options: vec!["topic1".to_string(), "topic2".to_string()] }, "Poll".to_string(), to_sec(e.current_time() + DAY_TS), 1000, 0).assert_success();
     e.create_proposal(&users.bob, ProposalKind::Common, "Common".to_string(), to_sec(e.current_time() + DAY_TS), DEFAULT_MIN_PROPOSAL_VOTING_PERIOD_SEC, to_yocto("1")).assert_success();
 

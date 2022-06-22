@@ -82,7 +82,8 @@ impl Contract {
                     },
                     ProposalKind::FarmingReward { farm_list, .. } => {
                         require!(incentive_key < farm_list.len() as u32, E207_INVALID_INCENTIVE_KEY);
-                        let farm_tokens: Vec<AccountId> = farm_list[incentive_key as usize].split('|').into_iter().map(|a| a.parse().unwrap()).collect();
+                        let (farm_tokens_str, _) = farm_list[incentive_key as usize].split_once('&').unwrap_or_else(|| env::panic_str(E501_INVALID_FARM_INFO));
+                        let farm_tokens: Vec<AccountId> = farm_tokens_str.split('|').into_iter().map(|a| a.parse().unwrap_or_else(|_| env::panic_str(E502_INVALID_TOKEN_ID))).collect();
                         require!(
                             self.data().whitelisted_incentive_tokens.contains(token_id) || farm_tokens.contains(token_id)
                             , E203_INVALID_INCENTIVE_TOKEN);
