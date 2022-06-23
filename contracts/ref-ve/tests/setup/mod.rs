@@ -10,7 +10,7 @@ pub use near_sdk_sim::{
 use mock_mft::ContractContract as MockMultiFungibleToken;
 
 pub use ref_ve::{ContractContract as VeContract,
-    Metadata, Proposal, ProposalKind, Action, Account, FarmingReward, Config, VoteDetail, AccountInfo, VoteInfo
+    Metadata, Proposal, ProposalKind, Action, Account, Config, VoteDetail, AccountInfo, VoteInfo
 };
 
 pub use ref_ve::{
@@ -24,7 +24,7 @@ pub use ref_ve::{
     E100_ACC_NOT_REGISTERED, E101_INSUFFICIENT_BALANCE, E102_INSUFFICIENT_STORAGE, E103_STILL_HAS_REWARD, E104_STILL_HAS_LPT,
     E200_ALREADY_VOTED, E201_INVALID_VOTE, E203_INVALID_INCENTIVE_TOKEN, E204_VOTE_CAN_NOT_CANCEL, E205_NOT_VOTABLE, E206_NO_VOTED, E207_INVALID_INCENTIVE_KEY,
     E301_INVALID_RATIO, E302_INVALID_DURATION, E305_STILL_IN_LOCK, 
-    E402_INVALID_START_TIME, E404_PROPOSAL_NOT_EXIST, E405_PROPOSAL_NOT_SUPPORT_INCENTIVE, E406_EXPIRED_PROPOSAL
+    E402_INVALID_START_TIME, E404_PROPOSAL_NOT_EXIST, E406_EXPIRED_PROPOSAL
 };
 
 mod users;

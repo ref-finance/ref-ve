@@ -68,24 +68,26 @@ fn test_deposit_reward() {
     e.ft_mint(&tokens.wnear, &users.alice, to_yocto("2000"));
     e.ft_mint(&tokens.nusdc, &users.alice, to_yocto("2000"));
 
-    // 1 : E405_PROPOSAL_NOT_SUPPORT_INCENTIVE
-    assert_err!(e.deposit_reward(&tokens.nref, &users.alice, to_yocto("100"), 1, 0), E405_PROPOSAL_NOT_SUPPORT_INCENTIVE);
-
-    // 2 : E207_INVALID_INCENTIVE_KEY
+    // 1 : E207_INVALID_INCENTIVE_KEY
     assert_err!(e.deposit_reward(&tokens.nref, &users.alice, to_yocto("100"), 0, 5), E207_INVALID_INCENTIVE_KEY);
+    assert_err!(e.deposit_reward(&tokens.nref, &users.alice, to_yocto("100"), 1, 1), E207_INVALID_INCENTIVE_KEY);
     assert_err!(e.deposit_reward(&tokens.nref, &users.alice, to_yocto("100"), 2, 1), E207_INVALID_INCENTIVE_KEY);
 
     // success 
     e.deposit_reward(&tokens.nref, &users.alice, to_yocto("100"), 0, 0).assert_success();
     e.deposit_reward(&tokens.nref, &users.alice, to_yocto("100"), 0, 1).assert_success();
+    e.deposit_reward(&tokens.nref, &users.alice, to_yocto("100"), 1, 0).assert_success();
     e.deposit_reward(&tokens.nref, &users.alice, to_yocto("100"), 2, 0).assert_success();
     assert_eq!(e.get_proposal(2).unwrap().incentive.get(&0).unwrap().incentive_amounts[0], to_yocto("100"));
 
-    // 3 : E203_INVALID_INCENTIVE_TOKEN
+    // 2 : E203_INVALID_INCENTIVE_TOKEN
     assert_err!(e.deposit_reward(&tokens.nusdc, &users.alice, to_yocto("100"), 0, 0), E203_INVALID_INCENTIVE_TOKEN);
+    assert_err!(e.deposit_reward(&tokens.nusdc, &users.alice, to_yocto("100"), 1, 0), E203_INVALID_INCENTIVE_TOKEN);
     assert_err!(e.deposit_reward(&tokens.nusdc, &users.alice, to_yocto("100"), 2, 0), E203_INVALID_INCENTIVE_TOKEN);
 
-    // 4 : E406_EXPIRED_PROPOSAL
+    // 3 : E406_EXPIRED_PROPOSAL
     e.skip_time(DEFAULT_MIN_PROPOSAL_VOTING_PERIOD_SEC);
+    assert_err!(e.deposit_reward(&tokens.nref, &users.alice, to_yocto("100"), 0, 0), E406_EXPIRED_PROPOSAL);
+    assert_err!(e.deposit_reward(&tokens.nref, &users.alice, to_yocto("100"), 1, 0), E406_EXPIRED_PROPOSAL);
     assert_err!(e.deposit_reward(&tokens.nref, &users.alice, to_yocto("100"), 2, 0), E406_EXPIRED_PROPOSAL);
 }

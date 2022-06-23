@@ -19,10 +19,12 @@ fn test_claim_and_withdraw_all() {
     e.create_proposal(&users.alice, ProposalKind::Poll { options: vec!["topic1".to_string(), "topic2".to_string()] }, "Poll".to_string(), to_sec(e.current_time() + DAY_TS), DEFAULT_MIN_PROPOSAL_VOTING_PERIOD_SEC, 0).assert_success();
     e.create_proposal(&users.alice, ProposalKind::Poll { options: vec!["topic1".to_string(), "topic2".to_string()] }, "Poll".to_string(), to_sec(e.current_time() + DAY_TS), DEFAULT_MIN_PROPOSAL_VOTING_PERIOD_SEC, 0).assert_success();
     e.create_proposal(&users.alice, ProposalKind::Poll { options: vec!["topic1".to_string(), "topic2".to_string()] }, "Poll".to_string(), to_sec(e.current_time() + DAY_TS), DEFAULT_MIN_PROPOSAL_VOTING_PERIOD_SEC, 0).assert_success();
+    e.create_proposal(&users.alice, ProposalKind::Common, "Common".to_string(), to_sec(e.current_time() + DAY_TS), DEFAULT_MIN_PROPOSAL_VOTING_PERIOD_SEC, 0).assert_success();
     e.skip_time(DAY_SEC);
     e.action_proposal(&users.alice, 0, Action::VotePoll { poll_id: 0 }, None).assert_success();
     e.action_proposal(&users.alice, 1, Action::VotePoll { poll_id: 0 }, None).assert_success();
     e.action_proposal(&users.alice, 2, Action::VotePoll { poll_id: 0 }, None).assert_success();
+    e.action_proposal(&users.alice, 3, Action::VoteApprove, None).assert_success();
     e.ft_mint(&tokens.nref, &users.alice, to_yocto("200"));
     e.ft_mint(&tokens.wnear, &users.alice, to_yocto("200"));
     
@@ -34,7 +36,9 @@ fn test_claim_and_withdraw_all() {
     e.deposit_reward(&tokens.nref, &users.alice, to_yocto("100"), 1, 0).assert_success();
     assert_eq!(to_yocto("100"), e.get_proposal(1).unwrap().incentive.get(&0).unwrap().incentive_amounts[0]);
     e.deposit_reward(&tokens.wnear, &users.alice, to_yocto("100"), 2, 0).assert_success();
-    assert_eq!(to_yocto("100"), e.get_proposal(1).unwrap().incentive.get(&0).unwrap().incentive_amounts[0]);
+    assert_eq!(to_yocto("100"), e.get_proposal(2).unwrap().incentive.get(&0).unwrap().incentive_amounts[0]);
+    e.deposit_reward(&tokens.wnear, &users.alice, to_yocto("100"), 3, 0).assert_success();
+    assert_eq!(to_yocto("100"), e.get_proposal(3).unwrap().incentive.get(&0).unwrap().incentive_amounts[0]);
 
 
     assert_eq!(HashMap::from([(0, VoteDetail{
@@ -43,6 +47,8 @@ fn test_claim_and_withdraw_all() {
         action: Action::VotePoll { poll_id: 0 }, amount: to_ve_token("200")
     }), (2, VoteDetail{
         action: Action::VotePoll { poll_id: 0 }, amount: to_ve_token("200")
+    }), (3, VoteDetail{
+        action: Action::VoteApprove, amount: to_ve_token("200")
     })]), e.get_vote_detail(&users.alice));
     assert_eq!(HashMap::new(), e.get_vote_detail_history(&users.alice));
     assert_eq!(HashMap::new(), e.get_unclaimed_proposal(&users.alice));
@@ -50,7 +56,7 @@ fn test_claim_and_withdraw_all() {
     e.skip_time(DEFAULT_MIN_PROPOSAL_VOTING_PERIOD_SEC);
 
     assert_eq!(to_yocto("200"), e.get_unclaimed_rewards(&users.alice).get(&tokens.nref.account_id()).unwrap().0);
-    assert_eq!(to_yocto("100"), e.get_unclaimed_rewards(&users.alice).get(&tokens.wnear.account_id()).unwrap().0);
+    assert_eq!(to_yocto("200"), e.get_unclaimed_rewards(&users.alice).get(&tokens.wnear.account_id()).unwrap().0);
 
     assert_eq!(HashMap::new(), e.get_vote_detail(&users.alice));
     assert_eq!(HashMap::from([(0, VoteDetail{
@@ -59,6 +65,8 @@ fn test_claim_and_withdraw_all() {
         action: Action::VotePoll { poll_id: 0 }, amount: to_ve_token("200")
     }), (2, VoteDetail{
         action: Action::VotePoll { poll_id: 0 }, amount: to_ve_token("200")
+    }), (3, VoteDetail{
+        action: Action::VoteApprove, amount: to_ve_token("200")
     })]), e.get_vote_detail_history(&users.alice));
     assert_eq!(HashMap::from([(0, VoteDetail{
         action: Action::VotePoll { poll_id: 0 }, amount: to_ve_token("200")
@@ -66,6 +74,8 @@ fn test_claim_and_withdraw_all() {
         action: Action::VotePoll { poll_id: 0 }, amount: to_ve_token("200")
     }), (2, VoteDetail{
         action: Action::VotePoll { poll_id: 0 }, amount: to_ve_token("200")
+    }), (3, VoteDetail{
+        action: Action::VoteApprove, amount: to_ve_token("200")
     })]), e.get_unclaimed_proposal(&users.alice));
     assert_eq!(0, e.get_proposal(0).unwrap().incentive.get(&0).unwrap().claimed_amounts[0]);
     
@@ -73,6 +83,7 @@ fn test_claim_and_withdraw_all() {
     e.claim_and_withdraw_all(&users.alice).assert_success();
     e.claim_and_withdraw_all(&users.alice).assert_success();
     assert_eq!(e.ft_balance_of(&tokens.nref, &users.alice), to_yocto("200"));
+    assert_eq!(e.ft_balance_of(&tokens.wnear, &users.alice), to_yocto("200"));
     assert_eq!(to_yocto("100"), e.get_proposal(0).unwrap().incentive.get(&0).unwrap().claimed_amounts[0]);
     assert_eq!(HashMap::new(), e.get_vote_detail(&users.alice));
     assert_eq!(HashMap::from([(0, VoteDetail{
@@ -81,6 +92,8 @@ fn test_claim_and_withdraw_all() {
         action: Action::VotePoll { poll_id: 0 }, amount: to_ve_token("200")
     }), (2, VoteDetail{
         action: Action::VotePoll { poll_id: 0 }, amount: to_ve_token("200")
+    }), (3, VoteDetail{
+        action: Action::VoteApprove, amount: to_ve_token("200")
     })]), e.get_vote_detail_history(&users.alice));
     assert_eq!(HashMap::new(), e.get_unclaimed_proposal(&users.alice));
     assert_eq!(format!("{:?}", e.get_proposal(0).unwrap()), format!("{:?}", e.list_proposals(None, None)[0]));
@@ -112,6 +125,7 @@ fn test_claim_reward() {
     e.create_proposal(&users.dude, ProposalKind::Poll { options: vec!["topic111".to_string(), "topic222".to_string()] }, "Poll".to_string(), to_sec(e.current_time() + DAY_TS), DEFAULT_MIN_PROPOSAL_VOTING_PERIOD_SEC, 0).assert_success();
     e.create_proposal(&users.dude, ProposalKind::FarmingReward { farm_list: vec!["noct.near|nref.near&2657".to_string(), "nusdt.near|nusdc.near|ndai.near&1910".to_string(), "usn.near|nusdt.near&3020".to_string()], total_reward: 20000 }, "FarmingReward".to_string(), to_sec(e.current_time() + DAY_TS), DEFAULT_MIN_PROPOSAL_VOTING_PERIOD_SEC, 0).assert_success();
     e.create_proposal(&users.dude, ProposalKind::Poll { options: vec!["topic111".to_string(), "topic222".to_string()] }, "Poll".to_string(), to_sec(e.current_time() + DAY_TS), DEFAULT_MIN_PROPOSAL_VOTING_PERIOD_SEC, 0).assert_success();
+    e.create_proposal(&users.dude, ProposalKind::Common, "Common".to_string(), to_sec(e.current_time() + DAY_TS), DEFAULT_MIN_PROPOSAL_VOTING_PERIOD_SEC, 0).assert_success();
    
     e.skip_time(DAY_SEC);
     e.action_proposal(&users.alice, 0, Action::VotePoll { poll_id: 0 }, None).assert_success();
@@ -127,6 +141,8 @@ fn test_claim_reward() {
     e.action_proposal(&users.eve, 4, Action::VoteFarm { farm_id: 1 }, None).assert_success();
     e.action_proposal(&users.charlie, 5, Action::VotePoll { poll_id: 0 }, None).assert_success();
     e.action_proposal(&users.eve, 5, Action::VotePoll { poll_id: 1 }, None).assert_success();
+    e.action_proposal(&users.charlie, 6, Action::VoteApprove, None).assert_success();
+    e.action_proposal(&users.eve, 6, Action::VoteReject, None).assert_success();
 
     assert_eq!(HashMap::from([(0, VoteDetail {
         action: Action::VotePoll { poll_id: 0 }, amount: to_ve_token("200")
@@ -153,6 +169,7 @@ fn test_claim_reward() {
     e.deposit_reward(&tokens.nref, &users.dude, to_yocto("120"), 3, 0).assert_success();
     e.deposit_reward(&tokens.ndai, &users.dude, to_yocto("210"), 4, 1).assert_success();
     e.deposit_reward(&tokens.wnear, &users.dude, to_yocto("210"), 5, 0).assert_success();
+    e.deposit_reward(&tokens.wnear, &users.dude, to_yocto("180"), 6, 0).assert_success();
 
     assert_eq!(HashMap::new(), e.get_unclaimed_proposal(&users.alice));
     e.skip_time(DEFAULT_MIN_PROPOSAL_VOTING_PERIOD_SEC);
@@ -201,6 +218,10 @@ fn test_claim_reward() {
     assert_eq!(HashMap::from([(tokens.nref.account_id(), to_yocto("80")), (tokens.ndai.account_id(), to_yocto("70")), (tokens.wnear.account_id(), to_yocto("70"))]), e.get_account_info(&users.charlie).unwrap().rewards);
     e.claim_reward(&users.eve, 5);
     assert_eq!(HashMap::from([(tokens.nref.account_id(), to_yocto("160")), (tokens.ndai.account_id(), to_yocto("140")), (tokens.wnear.account_id(), to_yocto("140"))]), e.get_account_info(&users.eve).unwrap().rewards);
+    e.claim_reward(&users.charlie, 6);
+    assert_eq!(HashMap::from([(tokens.nref.account_id(), to_yocto("80")), (tokens.ndai.account_id(), to_yocto("70")), (tokens.wnear.account_id(), to_yocto("130"))]), e.get_account_info(&users.charlie).unwrap().rewards);
+    e.claim_reward(&users.eve, 6);
+    assert_eq!(HashMap::from([(tokens.nref.account_id(), to_yocto("160")), (tokens.ndai.account_id(), to_yocto("140")), (tokens.wnear.account_id(), to_yocto("260"))]), e.get_account_info(&users.eve).unwrap().rewards);
     assert_eq!(e.get_proposal(0).unwrap().incentive.get(&0).unwrap().incentive_amounts, e.get_proposal(0).unwrap().incentive.get(&0).unwrap().claimed_amounts);
     assert_eq!(e.get_proposal(1).unwrap().incentive.get(&0).unwrap().incentive_amounts, e.get_proposal(1).unwrap().incentive.get(&0).unwrap().claimed_amounts);
     assert_eq!(vec![VoteInfo{

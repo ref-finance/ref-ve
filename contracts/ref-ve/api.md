@@ -265,14 +265,14 @@ near view $VE list_proposals
     participants: '0',
     incentive: {
       '0': {
-        incentive_token_id: 'token_id',
+        incentive_token_id: ['token_id'],
         incentive_amount: '100000000000000000000',
         claimed_amount: '0'
       },
       '1': {
-        incentive_token_id: 'token_id',
-        incentive_amount: '100000000000000000000',
-        claimed_amount: '0'
+        incentive_token_id: ['token_id'],
+        incentive_amount: ['100000000000000000000'],
+        claimed_amount: ['0']
       }
     },
     status: 'WarmUp',
@@ -328,9 +328,9 @@ near view $VE list_proposals
     participants: '0',
     incentive: {
       '0': {
-        incentive_token_id: 'token_id',
-        incentive_amount: '100000000000000000000',
-        claimed_amount: '0'
+        incentive_token_id: ['token_id'],
+        incentive_amount: ['100000000000000000000'],
+        claimed_amount: ['0']
       }
     },
     status: 'WarmUp',
@@ -356,14 +356,14 @@ near view $VE get_proposal '{"proposal_id": 0}'
     participants: '0',
     incentive: {
       '0': {
-        incentive_token_id: 'token_id',
-        incentive_amount: '100000000000000000000',
-        claimed_amount: '0'
+        incentive_token_id: ['token_id'],
+        incentive_amount: ['100000000000000000000'],
+        claimed_amount: ['0']
       },
       '1': {
-        incentive_token_id: 'token_id',
-        incentive_amount: '100000000000000000000',
-        claimed_amount: '0'
+        incentive_token_id: ['token_id'],
+        incentive_amount: ['100000000000000000000'],
+        claimed_amount: ['0']
       }
     },
     status: 'WarmUp',

@@ -23,15 +23,6 @@ pub enum ProposalStatus {
     Expired,
 }
 
-#[derive(BorshSerialize, BorshDeserialize, Serialize, Clone)]
-#[cfg_attr(not(target_arch = "wasm32"), derive(Debug, Deserialize, PartialEq))]
-#[serde(crate = "near_sdk::serde")]
-pub struct FarmingReward {
-    #[serde(with = "u128_dec_format")]
-    pub price: u128,
-    pub portion_list: Vec<(String, u32)>
-}
-
 #[derive(BorshSerialize, BorshDeserialize, Serialize, Clone, Default)]
 #[cfg_attr(not(target_arch = "wasm32"), derive(Debug, Deserialize, PartialEq))]
 #[serde(crate = "near_sdk::serde")]
