@@ -184,13 +184,8 @@ impl Contract {
             for (proposal_id, vote_detail) in account.proposals {
                 let proposal = self.internal_unwrap_proposal(proposal_id);
                 if proposal.status == Some(ProposalStatus::Expired) {
-                    match proposal.kind {
-                        ProposalKind::Poll { .. } | ProposalKind::FarmingReward { .. } => {
-                            if !proposal.incentive.is_empty() {
-                                result.insert(proposal_id, vote_detail.clone());
-                            }
-                        },
-                        _ => {}
+                    if !proposal.incentive.is_empty() {
+                        result.insert(proposal_id, vote_detail.clone());
                     }
                 }
             }

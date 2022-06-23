@@ -76,10 +76,6 @@ impl Contract {
         match proposal.status {
             Some(ProposalStatus::WarmUp) | Some(ProposalStatus::InProgress) => {
                 match &proposal.kind {
-                    ProposalKind::Poll { .. } => {
-                        require!(incentive_key == 0, E207_INVALID_INCENTIVE_KEY);
-                        require!(self.data().whitelisted_incentive_tokens.contains(token_id), E203_INVALID_INCENTIVE_TOKEN);
-                    },
                     ProposalKind::FarmingReward { farm_list, .. } => {
                         require!(incentive_key < farm_list.len() as u32, E207_INVALID_INCENTIVE_KEY);
                         let farm_tokens = extra_incentive_tokens(farm_list[incentive_key as usize].clone());
@@ -88,8 +84,9 @@ impl Contract {
                             , E203_INVALID_INCENTIVE_TOKEN);
                     },
                     _ => {
-                        env::panic_str(E405_PROPOSAL_NOT_SUPPORT_INCENTIVE);
-                    }
+                        require!(incentive_key == 0, E207_INVALID_INCENTIVE_KEY);
+                        require!(self.data().whitelisted_incentive_tokens.contains(token_id), E203_INVALID_INCENTIVE_TOKEN);
+                    },
                 }
                 
                 let total_reward = proposal.deposit_reward(incentive_key, token_id, amount);

@@ -28,7 +28,6 @@ pub const E305_STILL_IN_LOCK: &str = "E305: still in locking";
 
 pub const E402_INVALID_START_TIME: &str = "E402: invalid start time";
 pub const E404_PROPOSAL_NOT_EXIST: &str = "E404: proposal not exist";
-pub const E405_PROPOSAL_NOT_SUPPORT_INCENTIVE: &str = "E405: proposal not support incentive";
 pub const E406_EXPIRED_PROPOSAL: &str = "E406: expired proposal";
 
 pub const E500_INVALID_MSG: &str = "E500: invalid msg";
