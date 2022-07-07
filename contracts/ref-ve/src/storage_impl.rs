@@ -67,6 +67,8 @@ impl StorageManagement for Contract {
 
             self.internal_remove_account(&account_id);
             if account.sponsor_id != env::current_account_id(){
+                // [Audit] Risk: If one account locked LPT, and unlocked after a while, he/she can call `storage_unregister`
+                // to receive storage refund even if he/she didn't run `storage_deposit` before
                 Promise::new(account.sponsor_id).transfer(STORAGE_BALANCE_MIN_BOUND);
             }
             true
