@@ -26,7 +26,7 @@ impl Contract {
                 if let Some(reward_details) = proposal.claim_reward(&vote_detail) {
                     account.add_rewards(&HashMap::from_iter(reward_details));
                 }
-                self.data_mut().proposals.insert(&proposal_id, &proposal.into());
+                self.internal_set_proposal(proposal_id, proposal.into());
                 account.proposals_history.insert(&proposal_id, &vote_detail);
                 self.internal_set_account(&account_id, account);
             }
@@ -75,17 +75,25 @@ impl Contract {
             }
             PromiseResult::Failed => {
                 // This reverts the changes from withdraw function.
-                let mut account = self.internal_unwrap_account(&sender_id);
-                account.add_rewards(&HashMap::from([(token_id.clone(), amount)]));
-                self.internal_set_account(&sender_id, account);
+                if let Some(mut account) = self.internal_get_account(&sender_id) {
+                    account.add_rewards(&HashMap::from([(token_id.clone(), amount)]));
+                    self.internal_set_account(&sender_id, account);
 
-                Event::RewardWithdraw {
-                    caller_id: &sender_id,
-                    token_id: &token_id,
-                    withdraw_amount: &U128(amount),
-                    success: false,
+                    Event::RewardWithdraw {
+                        caller_id: &sender_id,
+                        token_id: &token_id,
+                        withdraw_amount: &U128(amount),
+                        success: false,
+                    }
+                    .emit();
+                } else {
+                    Event::RewardLostfound {
+                        caller_id: &sender_id,
+                        token_id: &token_id,
+                        withdraw_amount: &U128(amount),
+                    }
+                    .emit();
                 }
-                .emit();
             }
         }
     }
@@ -124,7 +132,7 @@ impl Contract {
                     });
                 }
                 history.insert(*proposal_id, vote_detail.clone());
-                self.data_mut().proposals.insert(proposal_id, &proposal.into());
+                self.internal_set_proposal(*proposal_id, proposal.into());
                 false
             } else {
                 true

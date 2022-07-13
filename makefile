@@ -8,7 +8,7 @@ build: contracts/ref-ve
 	cp target/wasm32-unknown-unknown/release/ref_ve.wasm ./res/ref_ve.wasm
 
 test: build mock-ft mock-mft
-	cd ${SRC_DIR} && RUSTFLAGS=$(RFLAGS) cargo test
+	RUSTFLAGS=$(RFLAGS) cargo test -p ref-ve 
 
 release:
 	$(call docker_build,_rust_setup.sh)

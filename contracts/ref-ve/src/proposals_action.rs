@@ -123,9 +123,7 @@ impl Contract {
                 proposal.votes[vote_detail.action.get_index()].participants -= 1;
                 proposal.participants -= 1;
                 
-                self.data_mut()
-                    .proposals
-                    .insert(&proposal_id, &proposal.into());
+                self.internal_set_proposal(proposal_id, proposal.into());
             },
             _ => env::panic_str(E204_VOTE_CAN_NOT_CANCEL)
         }

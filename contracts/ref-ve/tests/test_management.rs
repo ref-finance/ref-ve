@@ -19,11 +19,18 @@ fn test_modify_config(){
     assert_eq!(e.get_config().min_proposal_start_vote_offset_sec, 500);
 
     assert_err!(e.modify_locking_policy(&users.alice, 500, 1000, 3000), E301_INVALID_RATIO);
+    assert_err!(e.modify_locking_policy(&users.alice, 1500, 1000, 30000), E306_INVALID_LOCK_DURATION_LIMIT);
 
     e.modify_locking_policy(&users.alice, 500, 1000, 30000).assert_success();
     assert_eq!(e.get_config().min_locking_duration_sec, 500);
     assert_eq!(e.get_config().max_locking_duration_sec, 1000);
     assert_eq!(e.get_config().max_locking_multiplier, 30000);
+
+    assert_err!(e.modify_voting_duration_limit(&users.alice, 11000, 2000), E307_INVALID_VOTING_DURATION_LIMIT);
+    e.modify_voting_duration_limit(&users.alice, 1000, 2000).assert_success();
+    assert_eq!(e.get_config().min_voting_duration_sec, 1000);
+    assert_eq!(e.get_config().max_voting_duration_sec, 2000);
+
 }
 
 #[test]
@@ -75,8 +82,8 @@ fn test_return_removed_proposal_assets(){
     e.extend_whitelisted_accounts(&e.owner, vec![users.alice.account_id(), users.dude.account_id()]).assert_success();
 
     e.storage_deposit(&users.dude, &users.dude, to_yocto("1"));
-    e.create_proposal(&users.alice, ProposalKind::FarmingReward { farm_list: vec!["noct.near|nref.near&2657".to_string(), "nusdt.near|nusdc.near|ndai.near&1910".to_string(), "usn.near|nusdt.near&3020".to_string()], total_reward: 2 }, "FarmingReward".to_string(), to_sec(e.current_time() + DAY_TS), 1000, 0).assert_success();
-    e.create_proposal(&users.alice, ProposalKind::Poll { options: vec!["topic1".to_string(), "topic2".to_string()] }, "Poll".to_string(), to_sec(e.current_time() + DAY_TS), DEFAULT_MIN_PROPOSAL_VOTING_PERIOD_SEC, to_yocto("1")).assert_success();
+    e.create_proposal(&users.alice, ProposalKind::FarmingReward { farm_list: vec!["noct.near|nref.near&2657".to_string(), "nusdt.near|nusdc.near|ndai.near&1910".to_string(), "usn.near|nusdt.near&3020".to_string()], total_reward: 2 }, "FarmingReward".to_string(), to_sec(e.current_time() + DAY_TS), DEFAULT_MIN_VOTING_DURATION_SEC, 1).assert_success();
+    e.create_proposal(&users.alice, ProposalKind::Poll { options: vec!["topic1".to_string(), "topic2".to_string()] }, "Poll".to_string(), to_sec(e.current_time() + DAY_TS), DEFAULT_MIN_VOTING_DURATION_SEC, 1).assert_success();
     
     e.ft_mint(&tokens.nref, &users.alice, to_yocto("2000"));
     e.deposit_reward(&tokens.nref, &users.alice, to_yocto("100"), 0, 0).assert_success();

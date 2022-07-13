@@ -18,6 +18,7 @@ mod errors;
 mod events;
 mod utils;
 mod views;
+mod legacy;
 
 pub use crate::owner::*;
 pub use crate::account::*;
@@ -34,6 +35,7 @@ pub use crate::errors::*;
 pub use crate::events::*;
 pub use crate::utils::*;
 pub use crate::views::*;
+pub use crate::legacy::*;
 
 use near_contract_standards::fungible_token::metadata::{
     FungibleTokenMetadata, FungibleTokenMetadataProvider, FT_METADATA_SPEC,
@@ -77,6 +79,10 @@ pub struct Config {
     /// Assuming the 100% multiplier at the 0 duration. Should be no less than 100%.
     /// E.g. 20000 means 200% multiplier (or 2X).
     pub max_locking_multiplier: u32,
+    /// The min duration to voting in seconds.
+    pub min_voting_duration_sec: DurationSec,
+    /// The max duration to voting in seconds.
+    pub max_voting_duration_sec: DurationSec,
 }
 
 impl Config {
@@ -84,6 +90,13 @@ impl Config {
         require!(
             self.max_locking_multiplier > MIN_LOCKING_REWARD_RATIO,
             E301_INVALID_RATIO
+        );
+        require!(
+            self.min_locking_duration_sec < self.max_locking_duration_sec,
+            E306_INVALID_LOCK_DURATION_LIMIT
+        );
+        require!(self.min_voting_duration_sec < self.max_voting_duration_sec, 
+            E307_INVALID_VOTING_DURATION_LIMIT
         );
     }
 }
@@ -95,6 +108,8 @@ impl Default for Config {
             min_locking_duration_sec: DEFAULT_MIN_LOCKING_DURATION_SEC,
             max_locking_duration_sec: DEFAULT_MAX_LOCKING_DURATION_SEC,
             max_locking_multiplier: DEFAULT_MAX_LOCKING_REWARD_RATIO,
+            min_voting_duration_sec: DEFAULT_MIN_VOTING_DURATION_SEC,
+            max_voting_duration_sec: DEFAULT_MAX_VOTING_DURATION_SEC,
         }
     }
 }
@@ -138,7 +153,8 @@ pub struct ContractData {
 /// Versioned contract data. Allows to easily upgrade contracts.
 #[derive(BorshSerialize, BorshDeserialize)]
 pub enum VersionedContractData {
-    V0100(ContractData),
+    V0100(ContractDataV0100),
+    V0200(ContractData),
 }
 
 #[near_bindgen]
@@ -155,7 +171,7 @@ impl Contract {
         require!(!env::state_exists(), E000_ALREADY_INIT);
         Self {
             ft: FungibleToken::new(b"a".to_vec()),
-            data: VersionedContractData::V0100(ContractData {
+            data: VersionedContractData::V0200(ContractData {
                 owner_id,
                 operators: UnorderedSet::new(StorageKeys::Operator),
                 whitelisted_accounts: UnorderedSet::new(StorageKeys::WhitelistedAccounts),
@@ -186,7 +202,7 @@ impl Contract {
     #[allow(unreachable_patterns)]
     fn data(&self) -> &ContractData {
         match &self.data {
-            VersionedContractData::V0100(data) => data,
+            VersionedContractData::V0200(data) => data,
             _ => unimplemented!(),
         }
     }
@@ -194,7 +210,7 @@ impl Contract {
     #[allow(unreachable_patterns)]
     fn data_mut(&mut self) -> &mut ContractData {
         match &mut self.data {
-            VersionedContractData::V0100(data) => data,
+            VersionedContractData::V0200(data) => data,
             _ => unimplemented!(),
         }
     }

@@ -16,10 +16,10 @@ fn test_claim_and_withdraw_all() {
 
     e.extend_whitelisted_accounts(&e.owner, vec![users.alice.account_id()]).assert_success();
 
-    e.create_proposal(&users.alice, ProposalKind::Poll { options: vec!["topic1".to_string(), "topic2".to_string()] }, "Poll".to_string(), to_sec(e.current_time() + DAY_TS), DEFAULT_MIN_PROPOSAL_VOTING_PERIOD_SEC, 0).assert_success();
-    e.create_proposal(&users.alice, ProposalKind::Poll { options: vec!["topic1".to_string(), "topic2".to_string()] }, "Poll".to_string(), to_sec(e.current_time() + DAY_TS), DEFAULT_MIN_PROPOSAL_VOTING_PERIOD_SEC, 0).assert_success();
-    e.create_proposal(&users.alice, ProposalKind::Poll { options: vec!["topic1".to_string(), "topic2".to_string()] }, "Poll".to_string(), to_sec(e.current_time() + DAY_TS), DEFAULT_MIN_PROPOSAL_VOTING_PERIOD_SEC, 0).assert_success();
-    e.create_proposal(&users.alice, ProposalKind::Common, "Common".to_string(), to_sec(e.current_time() + DAY_TS), DEFAULT_MIN_PROPOSAL_VOTING_PERIOD_SEC, 0).assert_success();
+    e.create_proposal(&users.alice, ProposalKind::Poll { options: vec!["topic1".to_string(), "topic2".to_string()] }, "Poll".to_string(), to_sec(e.current_time() + DAY_TS), DEFAULT_MIN_VOTING_DURATION_SEC, 1).assert_success();
+    e.create_proposal(&users.alice, ProposalKind::Poll { options: vec!["topic1".to_string(), "topic2".to_string()] }, "Poll".to_string(), to_sec(e.current_time() + DAY_TS), DEFAULT_MIN_VOTING_DURATION_SEC, 1).assert_success();
+    e.create_proposal(&users.alice, ProposalKind::Poll { options: vec!["topic1".to_string(), "topic2".to_string()] }, "Poll".to_string(), to_sec(e.current_time() + DAY_TS), DEFAULT_MIN_VOTING_DURATION_SEC, 1).assert_success();
+    e.create_proposal(&users.alice, ProposalKind::Common, "Common".to_string(), to_sec(e.current_time() + DAY_TS), DEFAULT_MIN_VOTING_DURATION_SEC, 1).assert_success();
     e.skip_time(DAY_SEC);
     e.action_proposal(&users.alice, 0, Action::VotePoll { poll_id: 0 }, None).assert_success();
     e.action_proposal(&users.alice, 1, Action::VotePoll { poll_id: 0 }, None).assert_success();
@@ -53,7 +53,7 @@ fn test_claim_and_withdraw_all() {
     assert_eq!(HashMap::new(), e.get_vote_detail_history(&users.alice));
     assert_eq!(HashMap::new(), e.get_unclaimed_proposal(&users.alice));
 
-    e.skip_time(DEFAULT_MIN_PROPOSAL_VOTING_PERIOD_SEC);
+    e.skip_time(DEFAULT_MIN_VOTING_DURATION_SEC);
 
     assert_eq!(to_yocto("200"), e.get_unclaimed_rewards(&users.alice).get(&tokens.nref.account_id()).unwrap().0);
     assert_eq!(to_yocto("200"), e.get_unclaimed_rewards(&users.alice).get(&tokens.wnear.account_id()).unwrap().0);
@@ -119,13 +119,13 @@ fn test_claim_reward() {
     e.extend_whitelisted_accounts(&e.owner, vec![users.dude.account_id()]).assert_success();
     e.storage_deposit(&users.dude, &users.dude, to_yocto("1"));
 
-    e.create_proposal(&users.dude, ProposalKind::Poll { options: vec!["topic1".to_string(), "topic2".to_string()] }, "Poll".to_string(), to_sec(e.current_time() + DAY_TS), DEFAULT_MIN_PROPOSAL_VOTING_PERIOD_SEC, 0).assert_success();
-    e.create_proposal(&users.dude, ProposalKind::Poll { options: vec!["topic11".to_string(), "topic22".to_string()] }, "Poll".to_string(), to_sec(e.current_time() + DAY_TS), DEFAULT_MIN_PROPOSAL_VOTING_PERIOD_SEC, 0).assert_success();
-    e.create_proposal(&users.dude, ProposalKind::FarmingReward { farm_list: vec!["noct.near|nref.near&2657".to_string(), "nusdt.near|nusdc.near|ndai.near&1910".to_string(), "usn.near|nusdt.near&3020".to_string()], total_reward: 20000 }, "FarmingReward".to_string(), to_sec(e.current_time() + DAY_TS), DEFAULT_MIN_PROPOSAL_VOTING_PERIOD_SEC, 0).assert_success();
-    e.create_proposal(&users.dude, ProposalKind::Poll { options: vec!["topic111".to_string(), "topic222".to_string()] }, "Poll".to_string(), to_sec(e.current_time() + DAY_TS), DEFAULT_MIN_PROPOSAL_VOTING_PERIOD_SEC, 0).assert_success();
-    e.create_proposal(&users.dude, ProposalKind::FarmingReward { farm_list: vec!["noct.near|nref.near&2657".to_string(), "nusdt.near|nusdc.near|ndai.near&1910".to_string(), "usn.near|nusdt.near&3020".to_string()], total_reward: 20000 }, "FarmingReward".to_string(), to_sec(e.current_time() + DAY_TS), DEFAULT_MIN_PROPOSAL_VOTING_PERIOD_SEC, 0).assert_success();
-    e.create_proposal(&users.dude, ProposalKind::Poll { options: vec!["topic111".to_string(), "topic222".to_string()] }, "Poll".to_string(), to_sec(e.current_time() + DAY_TS), DEFAULT_MIN_PROPOSAL_VOTING_PERIOD_SEC, 0).assert_success();
-    e.create_proposal(&users.dude, ProposalKind::Common, "Common".to_string(), to_sec(e.current_time() + DAY_TS), DEFAULT_MIN_PROPOSAL_VOTING_PERIOD_SEC, 0).assert_success();
+    e.create_proposal(&users.dude, ProposalKind::Poll { options: vec!["topic1".to_string(), "topic2".to_string()] }, "Poll".to_string(), to_sec(e.current_time() + DAY_TS), DEFAULT_MIN_VOTING_DURATION_SEC, 1).assert_success();
+    e.create_proposal(&users.dude, ProposalKind::Poll { options: vec!["topic11".to_string(), "topic22".to_string()] }, "Poll".to_string(), to_sec(e.current_time() + DAY_TS), DEFAULT_MIN_VOTING_DURATION_SEC, 1).assert_success();
+    e.create_proposal(&users.dude, ProposalKind::FarmingReward { farm_list: vec!["noct.near|nref.near&2657".to_string(), "nusdt.near|nusdc.near|ndai.near&1910".to_string(), "usn.near|nusdt.near&3020".to_string()], total_reward: 20000 }, "FarmingReward".to_string(), to_sec(e.current_time() + DAY_TS), DEFAULT_MIN_VOTING_DURATION_SEC, 1).assert_success();
+    e.create_proposal(&users.dude, ProposalKind::Poll { options: vec!["topic111".to_string(), "topic222".to_string()] }, "Poll".to_string(), to_sec(e.current_time() + DAY_TS), DEFAULT_MIN_VOTING_DURATION_SEC, 1).assert_success();
+    e.create_proposal(&users.dude, ProposalKind::FarmingReward { farm_list: vec!["noct.near|nref.near&2657".to_string(), "nusdt.near|nusdc.near|ndai.near&1910".to_string(), "usn.near|nusdt.near&3020".to_string()], total_reward: 20000 }, "FarmingReward".to_string(), to_sec(e.current_time() + DAY_TS), DEFAULT_MIN_VOTING_DURATION_SEC, 1).assert_success();
+    e.create_proposal(&users.dude, ProposalKind::Poll { options: vec!["topic111".to_string(), "topic222".to_string()] }, "Poll".to_string(), to_sec(e.current_time() + DAY_TS), DEFAULT_MIN_VOTING_DURATION_SEC, 1).assert_success();
+    e.create_proposal(&users.dude, ProposalKind::Common, "Common".to_string(), to_sec(e.current_time() + DAY_TS), DEFAULT_MIN_VOTING_DURATION_SEC, 1).assert_success();
    
     e.skip_time(DAY_SEC);
     e.action_proposal(&users.alice, 0, Action::VotePoll { poll_id: 0 }, None).assert_success();
@@ -172,7 +172,7 @@ fn test_claim_reward() {
     e.deposit_reward(&tokens.wnear, &users.dude, to_yocto("180"), 6, 0).assert_success();
 
     assert_eq!(HashMap::new(), e.get_unclaimed_proposal(&users.alice));
-    e.skip_time(DEFAULT_MIN_PROPOSAL_VOTING_PERIOD_SEC);
+    e.skip_time(DEFAULT_MIN_VOTING_DURATION_SEC);
     assert_eq!(HashMap::from([(0, VoteDetail {
         action: Action::VotePoll { poll_id: 0 }, amount: to_ve_token("200")
     }), (1, VoteDetail {
@@ -253,13 +253,13 @@ fn test_withdraw_reward() {
     e.extend_whitelisted_accounts(&e.owner, vec![users.dude.account_id()]).assert_success();
     e.storage_deposit(&users.dude, &users.dude, to_yocto("1"));
 
-    e.create_proposal(&users.dude, ProposalKind::Poll { options: vec!["topic1".to_string(), "topic2".to_string()] }, "Poll".to_string(), to_sec(e.current_time() + DAY_TS), DEFAULT_MIN_PROPOSAL_VOTING_PERIOD_SEC, 0).assert_success();
+    e.create_proposal(&users.dude, ProposalKind::Poll { options: vec!["topic1".to_string(), "topic2".to_string()] }, "Poll".to_string(), to_sec(e.current_time() + DAY_TS), DEFAULT_MIN_VOTING_DURATION_SEC, 1).assert_success();
     e.skip_time(DAY_SEC);
     e.action_proposal(&users.alice, 0, Action::VotePoll { poll_id: 0 }, None).assert_success();
     e.ft_mint(&tokens.nref, &users.alice, to_yocto("100"));
     e.deposit_reward(&tokens.nref, &users.alice, to_yocto("100"), 0, 0).assert_success();
 
-    e.skip_time(DEFAULT_MIN_PROPOSAL_VOTING_PERIOD_SEC);
+    e.skip_time(DEFAULT_MIN_VOTING_DURATION_SEC);
     assert_eq!(HashMap::new(), e.get_account_info(&users.alice).unwrap().rewards);
     e.lock_lpt(&users.alice, to_yocto("100"), DEFAULT_MAX_LOCKING_DURATION_SEC).assert_success();
     assert_eq!(HashMap::from([(tokens.nref.account_id(), to_yocto("100"))]), e.get_account_info(&users.alice).unwrap().rewards);

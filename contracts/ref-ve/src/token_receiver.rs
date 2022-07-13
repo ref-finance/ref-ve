@@ -100,6 +100,7 @@ impl Contract {
     ) {
         let mut account = self.internal_unwrap_or_default_account(account_id);
         let config = self.internal_config();
+        require!(self.internal_get_account(account_id).is_some() ||  amount >= MIN_FIRST_LOCK, E503_FIRST_LOCK_TOO_FEW);
         require!(duration_sec >= config.min_locking_duration_sec, E302_INVALID_DURATION);
         require!(duration_sec <= config.max_locking_duration_sec, E302_INVALID_DURATION);
 
@@ -129,7 +130,7 @@ impl Contract {
         amount: Balance,
         append_duration_sec: u32,
     ) {
-        let mut account = self.internal_unwrap_or_default_account(account_id);
+        let mut account = self.internal_unwrap_account(account_id);
         require!(account.unlock_timestamp != 0, E105_ACC_NOT_LOCKED);
         let timestamp = env::block_timestamp();
         let duration_sec = nano_to_sec(account.unlock_timestamp) - nano_to_sec(timestamp) + append_duration_sec;

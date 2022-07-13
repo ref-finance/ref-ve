@@ -52,6 +52,19 @@ impl Contract {
     }
 
     #[payable]
+    pub fn modify_voting_duration_limit(&mut self, min_voting_duration_sec: u32, max_voting_duration_sec: u32) {
+        assert_one_yocto();
+        require!(self.is_owner_or_operators(), E002_NOT_ALLOWED);
+        
+        let mut config =  self.data().config.get().unwrap();
+        config.min_voting_duration_sec = min_voting_duration_sec;
+        config.max_voting_duration_sec = max_voting_duration_sec;
+        
+        config.assert_valid();
+        self.data_mut().config.set(&config);
+    }
+
+    #[payable]
     pub fn modify_locking_policy(&mut self, min_duration: DurationSec, max_duration: DurationSec, max_ratio: u32) {
         assert_one_yocto();
         require!(self.is_owner_or_operators(), E002_NOT_ALLOWED);

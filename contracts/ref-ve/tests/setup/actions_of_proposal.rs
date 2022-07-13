@@ -47,7 +47,7 @@ impl Env {
                     proposal_id, action, memo
                 ),
                 MAX_GAS.0,
-                0,
+                1,
             )
     }
 

@@ -24,7 +24,8 @@
 neardev*
 
 # WASM files to be released
-/res/
+/res/*
+!/res/ref_ve_v0100.wasm
 
 # AVA tests
 **/node_modules/
