@@ -121,4 +121,19 @@ impl Env {
                 1,
             )
     }
+
+    pub fn modify_voting_duration_limit(
+        &self,
+        operator: &UserAccount,
+        min_voting_duration_sec: u32, max_voting_duration_sec: u32
+    ) -> ExecutionResult {
+        operator
+            .function_call(
+                self.ve_contract.contract.modify_voting_duration_limit(
+                    min_voting_duration_sec, max_voting_duration_sec
+                ),
+                MAX_GAS.0,
+                1,
+            )
+    }
 }

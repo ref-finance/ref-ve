@@ -52,6 +52,11 @@ pub enum Event<'a> {
         withdraw_amount: &'a U128,
         success: bool,
     },
+    RewardLostfound {
+        caller_id: &'a AccountId,
+        token_id: &'a AccountId,
+        withdraw_amount: &'a U128,
+    },
     
     RewardDeposit {
         caller_id: &'a AccountId,
@@ -210,6 +215,18 @@ mod tests {
         assert_eq!(
             test_utils::get_logs()[0],
             r#"EVENT_JSON:{"standard":"ref-ve","version":"1.0.0","event":"reward_withdraw","data":[{"caller_id":"alice","token_id":"ref","withdraw_amount":"100","success":true}]}"#
+        );
+    }
+
+    #[test]
+    fn event_reward_lostfound() {
+        let caller_id = &alice();
+        let token_id = &token_id();
+        let withdraw_amount = &U128(100);
+        Event::RewardLostfound { caller_id, token_id, withdraw_amount }.emit();
+        assert_eq!(
+            test_utils::get_logs()[0],
+            r#"EVENT_JSON:{"standard":"ref-ve","version":"1.0.0","event":"reward_lostfound","data":[{"caller_id":"alice","token_id":"ref","withdraw_amount":"100"}]}"#
         );
     }
 

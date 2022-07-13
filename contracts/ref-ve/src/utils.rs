@@ -15,6 +15,8 @@ pub type DurationSec = u32;
 pub const LOVE_DECIMAL: u8 = 18;
 
 pub const DAY_SEC: DurationSec = 60 * 60 * 24;
+pub const DEFAULT_MIN_VOTING_DURATION_SEC: DurationSec = DAY_SEC * 3;
+pub const DEFAULT_MAX_VOTING_DURATION_SEC: DurationSec = DAY_SEC * 30;
 pub const DEFAULT_MIN_PROPOSAL_START_VOTE_OFFSET_SEC: u32 = DAY_SEC;
 pub const DEFAULT_MIN_LOCKING_DURATION_SEC: DurationSec = DAY_SEC * 30;
 pub const DEFAULT_MAX_LOCKING_DURATION_SEC: DurationSec = DAY_SEC * 30 * 12; 
@@ -29,6 +31,8 @@ pub const GAS_FOR_RESOLVE_REWARD_TRANSFER: Gas = Gas(10 * TGAS);
 pub const GAS_FOR_REMOVED_PROPOSAL_ASSETS: Gas = Gas(20 * TGAS);
 pub const GAS_FOR_RESOLVE_REMOVED_PROPOSAL_ASSETS: Gas = Gas(10 * TGAS);
 
+pub const DESCRIPTION_LIMIT: usize = 2048;
+pub const MIN_FIRST_LOCK: u128 = 10u128.pow(22);
 pub const STORAGE_BALANCE_MIN_BOUND: u128 = 1_250_000_000_000_000_000_000;
 
 pub mod u64_dec_format {

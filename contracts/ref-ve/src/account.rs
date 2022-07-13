@@ -150,7 +150,7 @@ impl Contract {
                         rewards.insert(reward_token.clone(), reward_amount + rewards.get(&reward_token).unwrap_or(&0_u128));
                     });
                 }
-                self.data_mut().proposals.insert(proposal_id, &proposal.into());
+                self.internal_set_proposal(*proposal_id, proposal.into());
                 history.insert(*proposal_id, vote_detail.clone());
                 false
             } else {
@@ -167,7 +167,7 @@ impl Contract {
                         vote_detail.amount -= diff_ve_lpt_amount;
                     }
                     proposal.ve_amount_at_last_action = self.data().cur_total_ve_lpt;
-                    self.data_mut().proposals.insert(proposal_id, &proposal.into());
+                    self.internal_set_proposal(*proposal_id, proposal.into());
                 }
                 is_retain
             }
@@ -191,7 +191,7 @@ impl Contract {
             amount: ve_lpt_amount,
         });
         self.internal_claim_all(&mut account);
-        self.data_mut().accounts.insert(voter, &account.into());
+        self.internal_set_account(voter, account.into());
         ve_lpt_amount
     }
 
@@ -204,7 +204,7 @@ impl Contract {
         require!(account.proposals.contains_key(&proposal_id), E206_NO_VOTED);
         let action = account.proposals.remove(&proposal_id).unwrap();
         self.internal_claim_all(&mut account);
-        self.data_mut().accounts.insert(voter, &account.into());
+        self.internal_set_account(voter, account.into());
         action
     }
 }

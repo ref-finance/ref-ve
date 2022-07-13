@@ -11,6 +11,10 @@ fn test_update(){
         E002_NOT_ALLOWED
     );
 
+    println!("{:?}", e.owner.view_method_call(
+        e.ve_contract.contract.get_config()
+    ).unwrap_json_value());
     e.upgrade_contract(&e.owner, ref_ve_wasm_bytes()).assert_success();
-    assert_eq!(e.get_metadata().version, "0.1.0".to_string());
+    assert_eq!(e.get_metadata().version, "0.2.0".to_string());
+    println!("{:?}", e.get_config());
 }

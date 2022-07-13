@@ -65,7 +65,7 @@ fn test_withdraw_lpt() {
     e.lock_lpt(&users.alice, to_yocto("100"), DEFAULT_MAX_LOCKING_DURATION_SEC).assert_success();
     e.skip_time(DEFAULT_MAX_LOCKING_DURATION_SEC);
     e.extend_whitelisted_accounts(&e.owner, vec![users.alice.account_id()]).assert_success();
-    e.create_proposal(&users.alice, ProposalKind::Common, "Common".to_string(), to_sec(e.current_time() + DAY_TS), DEFAULT_MIN_PROPOSAL_VOTING_PERIOD_SEC, to_yocto("1")).assert_success();
+    e.create_proposal(&users.alice, ProposalKind::Common, "Common".to_string(), to_sec(e.current_time() + DAY_TS), DEFAULT_MIN_VOTING_DURATION_SEC, 1).assert_success();
     e.skip_time(DAY_SEC);
     e.action_proposal(&users.alice, 0, Action::VoteApprove, None).assert_success();
     assert_eq!(vec![VoteInfo{

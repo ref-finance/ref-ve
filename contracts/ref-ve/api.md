@@ -135,15 +135,15 @@ Eg:
 
 create farming reward proposal
 ```bash
-near call $VE create_proposal '{"kind": {"FarmingReward":{"farm_list":["noct.near|nref.near&2657", "nusdt.near|nusdc.near|ndai.near&1910"],"total_reward": 200000}}, "description": "FarmingReward Proposal", "start_at": 1655736586, "duration_sec": 86400 }' --account_id=u1.testnet 
+near call $VE create_proposal '{"kind": {"FarmingReward":{"farm_list":["noct.near|nref.near&2657", "nusdt.near|nusdc.near|ndai.near&1910"],"total_reward": 200000}}, "description": "FarmingReward Proposal", "start_at": 1655736586, "duration_sec": 86400 }' --account_id=u1.testnet  --depositYocto=1
 ```
 create common proposal
 ```bash
-near call $VE create_proposal '{"kind": "Common", "description": "Common Proposal", "start_at": 1655736586, "duration_sec": 5184000 }' --account_id=u1.testnet 
+near call $VE create_proposal '{"kind": "Common", "description": "Common Proposal", "start_at": 1655736586, "duration_sec": 5184000 }' --account_id=u1.testnet  --depositYocto=1
 ```
 create poll
 ```bash
-near call $VE create_proposal '{"kind": {"Poll":{ "options":["topic1", "topic2"]}}, "description": "Poll Proposal", "start_at": 1655736586, "duration_sec": 5184000 }' --account_id=u1.testnet 
+near call $VE create_proposal '{"kind": {"Poll":{ "options":["topic1", "topic2"]}}, "description": "Poll Proposal", "start_at": 1655736586, "duration_sec": 5184000 }' --account_id=u1.testnet  --depositYocto=1
 ```
 **Remove Proposal** 
 ```rust
@@ -158,16 +158,16 @@ pub fn action_proposal(&mut self, proposal_id: u32, action: Action, memo: Option
 ```
 voting farming reward
 ```bash
-near call $VE action_proposal '{"proposal_id":0, "action": {"VoteFarm": {"farm_id": 0}}}' --account_id=u1.testnet
+near call $VE action_proposal '{"proposal_id":0, "action": {"VoteFarm": {"farm_id": 0}}}' --account_id=u1.testnet  --depositYocto=1
 ```
 voting poll
 ```bash
-near call $VE action_proposal '{"proposal_id":1, "action": {"VotePoll": {"poll_id": 0}}}' --account_id=u1.testnet
+near call $VE action_proposal '{"proposal_id":1, "action": {"VotePoll": {"poll_id": 0}}}' --account_id=u1.testnet  --depositYocto=1
 ```
 voting common
 ```bash
-near call $VE action_proposal '{"proposal_id":1, "action": "VoteApprove"}' --account_id=u1.testnet
-near call $VE action_proposal '{"proposal_id":1, "action": "VoteReject"}' --account_id=u1.testnet
+near call $VE action_proposal '{"proposal_id":1, "action": "VoteApprove"}' --account_id=u1.testnet  --depositYocto=1
+near call $VE action_proposal '{"proposal_id":1, "action": "VoteReject"}' --account_id=u1.testnet  --depositYocto=1
 ```
 **Action Cancel**
 ```rust
@@ -209,6 +209,7 @@ pub fn extend_whitelisted_incentive_tokens(&mut self, tokens: Vec<AccountId>)
 pub fn remove_whitelisted_incentive_tokens(&mut self, tokens: Vec<AccountId>)
 
 pub fn modify_min_start_vote_offset_sec(&mut self, min_start_vote_offset_sec: u32);
+pub fn modify_voting_duration_limit(&mut self, min_voting_duration_sec: u32, max_voting_duration_sec: u32);
 pub fn modify_locking_policy(&mut self, min_duration: DurationSec, max_duration: DurationSec, max_ratio: u32);
 
 pub fn return_lpt_lostfound(&mut self, account_id: AccountId, amount: U128) -> Promise;
@@ -240,7 +241,9 @@ near view $VE get_config
   min_proposal_start_vote_offset_sec: '86400',
   min_locking_duration_sec: 2592000,
   max_locking_duration_sec: 31104000,
-  max_locking_multiplier: 20000
+  max_locking_multiplier: 20000,
+  min_voting_duration_sec: 259200,
+  max_voting_duration_sec: 2592000
 }
 
 near view $VE get_contract_storage_report

@@ -17,21 +17,28 @@ fn test_create_proposal(){
     
     // error scene 
     // 1 : E100_ACC_NOT_REGISTERED
-    assert_err!(e.create_proposal(&users.dude, ProposalKind::FarmingReward { farm_list: vec![], total_reward: 2 }, "FarmingReward".to_string(), to_sec(e.current_time()), 1000, 0), E100_ACC_NOT_REGISTERED);
+    assert_err!(e.create_proposal(&users.dude, ProposalKind::FarmingReward { farm_list: vec![], total_reward: 2 }, "FarmingReward".to_string(), to_sec(e.current_time()), DEFAULT_MIN_VOTING_DURATION_SEC, 1), E100_ACC_NOT_REGISTERED);
     
     // 2 : E002_NOT_ALLOWED just whitelisted accounts can create proposal 
     e.storage_deposit(&users.bob, &users.bob, to_yocto("1"));
-    assert_err!(e.create_proposal(&users.bob, ProposalKind::FarmingReward { farm_list: vec![], total_reward: 2 }, "FarmingReward".to_string(), to_sec(e.current_time()), 1000, 0), E002_NOT_ALLOWED);
+    assert_err!(e.create_proposal(&users.bob, ProposalKind::FarmingReward { farm_list: vec![], total_reward: 2 }, "FarmingReward".to_string(), to_sec(e.current_time()), DEFAULT_MIN_VOTING_DURATION_SEC, 1), E002_NOT_ALLOWED);
 
     // 3 : E402_INVALID_START_TIME 
-    assert_err!(e.create_proposal(&users.alice, ProposalKind::FarmingReward { farm_list: vec![], total_reward: 2 }, "FarmingReward".to_string(), to_sec(e.current_time()), 1000, 0), E402_INVALID_START_TIME);
-    assert_err!(e.create_proposal(&users.alice, ProposalKind::Poll { options: vec![] }, "Poll".to_string(), to_sec(e.current_time()), 1000, 0), E402_INVALID_START_TIME);
-    assert_err!(e.create_proposal(&users.alice, ProposalKind::Common, "Common".to_string(), to_sec(e.current_time()), 1000, to_yocto("1")), E402_INVALID_START_TIME);
+    assert_err!(e.create_proposal(&users.alice, ProposalKind::FarmingReward { farm_list: vec![], total_reward: 2 }, "FarmingReward".to_string(), to_sec(e.current_time()), DEFAULT_MIN_VOTING_DURATION_SEC, 1), E402_INVALID_START_TIME);
+    assert_err!(e.create_proposal(&users.alice, ProposalKind::Poll { options: vec![] }, "Poll".to_string(), to_sec(e.current_time()), DEFAULT_MIN_VOTING_DURATION_SEC, 1), E402_INVALID_START_TIME);
+    assert_err!(e.create_proposal(&users.alice, ProposalKind::Common, "Common".to_string(), to_sec(e.current_time()), DEFAULT_MIN_VOTING_DURATION_SEC, 1), E402_INVALID_START_TIME);
+
+    // 4 : E208_DESCRIPTION_TOO_LONG
+    assert_err!(e.create_proposal(&users.alice, ProposalKind::Common, "a".repeat(2049), to_sec(e.current_time()), DEFAULT_MIN_VOTING_DURATION_SEC, 1), E208_DESCRIPTION_TOO_LONG);
+
+    // 5 : E302_INVALID_DURATION
+    assert_err!(e.create_proposal(&users.alice, ProposalKind::Common, "Common".to_string(), to_sec(e.current_time()), DEFAULT_MIN_VOTING_DURATION_SEC - 1, 1), E302_INVALID_DURATION);
+    assert_err!(e.create_proposal(&users.alice, ProposalKind::Common, "Common".to_string(), to_sec(e.current_time()), DEFAULT_MAX_VOTING_DURATION_SEC + 1, 1), E302_INVALID_DURATION);
 
     let mut before = e.get_metadata();
-    e.create_proposal(&users.alice, ProposalKind::FarmingReward { farm_list: vec![], total_reward: 2 }, "FarmingReward".to_string(), to_sec(e.current_time() + DAY_TS), 1000, 0).assert_success();
-    e.create_proposal(&users.alice, ProposalKind::Poll { options: vec![] }, "Poll".to_string(), to_sec(e.current_time() + DAY_TS), 1000, 0).assert_success();
-    e.create_proposal(&users.alice, ProposalKind::Common, "Common".to_string(), to_sec(e.current_time() + DAY_TS), DEFAULT_MIN_PROPOSAL_VOTING_PERIOD_SEC, to_yocto("1")).assert_success();
+    e.create_proposal(&users.alice, ProposalKind::FarmingReward { farm_list: vec![], total_reward: 2 }, "FarmingReward".to_string(), to_sec(e.current_time() + DAY_TS), DEFAULT_MIN_VOTING_DURATION_SEC, 1).assert_success();
+    e.create_proposal(&users.alice, ProposalKind::Poll { options: vec![] }, "a".repeat(2048), to_sec(e.current_time() + DAY_TS), DEFAULT_MIN_VOTING_DURATION_SEC, 1).assert_success();
+    e.create_proposal(&users.alice, ProposalKind::Common, "Common".to_string(), to_sec(e.current_time() + DAY_TS), DEFAULT_MIN_VOTING_DURATION_SEC, 1).assert_success();
     before.proposal_count = 3.into();
     assert_eq!(format!("{:?}", before), format!("{:?}", e.get_metadata()));
 }
@@ -48,8 +55,8 @@ fn test_remove_proposal(){
     e.extend_whitelisted_accounts(&e.owner, vec![users.alice.account_id(), users.dude.account_id()]).assert_success();
 
     e.storage_deposit(&users.dude, &users.dude, to_yocto("1"));
-    e.create_proposal(&users.dude, ProposalKind::Common, "Common".to_string(), to_sec(e.current_time() + DAY_TS), 1000, 0).assert_success();
-    e.create_proposal(&users.alice, ProposalKind::Common, "Common".to_string(), to_sec(e.current_time() + DAY_TS), DEFAULT_MIN_PROPOSAL_VOTING_PERIOD_SEC, to_yocto("1")).assert_success();
+    e.create_proposal(&users.dude, ProposalKind::Common, "Common".to_string(), to_sec(e.current_time() + DAY_TS), DEFAULT_MIN_VOTING_DURATION_SEC, 1).assert_success();
+    e.create_proposal(&users.alice, ProposalKind::Common, "Common".to_string(), to_sec(e.current_time() + DAY_TS), DEFAULT_MIN_VOTING_DURATION_SEC, 1).assert_success();
     
     // error scene 
     // 1 : E100_ACC_NOT_REGISTERED
@@ -77,9 +84,9 @@ fn test_action_proposal(){
 
     e.extend_whitelisted_accounts(&e.owner, vec![users.bob.account_id()]).assert_success();
     
-    e.create_proposal(&users.bob, ProposalKind::FarmingReward { farm_list: vec!["noct.near|nref.near&2657".to_string(), "nusdt.near|nusdc.near|ndai.near&1910".to_string()], total_reward: 2 }, "FarmingReward".to_string(), to_sec(e.current_time() + DAY_TS), 1000, 0).assert_success();
-    e.create_proposal(&users.bob, ProposalKind::Poll { options: vec!["topic1".to_string(), "topic2".to_string()] }, "Poll".to_string(), to_sec(e.current_time() + DAY_TS), 1000, 0).assert_success();
-    e.create_proposal(&users.bob, ProposalKind::Common, "Common".to_string(), to_sec(e.current_time() + DAY_TS), DEFAULT_MIN_PROPOSAL_VOTING_PERIOD_SEC, to_yocto("1")).assert_success();
+    e.create_proposal(&users.bob, ProposalKind::FarmingReward { farm_list: vec!["noct.near|nref.near&2657".to_string(), "nusdt.near|nusdc.near|ndai.near&1910".to_string()], total_reward: 2 }, "FarmingReward".to_string(), to_sec(e.current_time() + DAY_TS), DEFAULT_MIN_VOTING_DURATION_SEC, 1).assert_success();
+    e.create_proposal(&users.bob, ProposalKind::Poll { options: vec!["topic1".to_string(), "topic2".to_string()] }, "Poll".to_string(), to_sec(e.current_time() + DAY_TS), DEFAULT_MIN_VOTING_DURATION_SEC, 1).assert_success();
+    e.create_proposal(&users.bob, ProposalKind::Common, "Common".to_string(), to_sec(e.current_time() + DAY_TS), DEFAULT_MIN_VOTING_DURATION_SEC, 1).assert_success();
 
     // error scene 
     // 1 : E100_ACC_NOT_REGISTERED
@@ -230,7 +237,7 @@ fn test_action_proposal_farming_reward_01(){
     
     e.extend_whitelisted_accounts(&e.owner, vec![users.bob.account_id()]).assert_success();
 
-    e.create_proposal(&users.bob, ProposalKind::FarmingReward { farm_list: vec!["noct.near|nref.near&2657".to_string(), "nusdt.near|nusdc.near|ndai.near&1910".to_string()], total_reward: 2 }, "FarmingReward".to_string(), to_sec(e.current_time() + DAY_TS), 1000, 0).assert_success();
+    e.create_proposal(&users.bob, ProposalKind::FarmingReward { farm_list: vec!["noct.near|nref.near&2657".to_string(), "nusdt.near|nusdc.near|ndai.near&1910".to_string()], total_reward: 2 }, "FarmingReward".to_string(), to_sec(e.current_time() + DAY_TS), DEFAULT_MIN_VOTING_DURATION_SEC, 1).assert_success();
 
     e.skip_time(DAY_SEC);
 
@@ -263,7 +270,7 @@ fn test_action_proposal_farming_reward_02(){
     
     e.extend_whitelisted_accounts(&e.owner, vec![users.bob.account_id()]).assert_success();
 
-    e.create_proposal(&users.bob, ProposalKind::FarmingReward { farm_list: vec!["noct.near|nref.near&2657".to_string(), "nusdt.near|nusdc.near|ndai.near&1910".to_string()], total_reward: 2 }, "FarmingReward".to_string(), to_sec(e.current_time() + DAY_TS), 1000, 0).assert_success();
+    e.create_proposal(&users.bob, ProposalKind::FarmingReward { farm_list: vec!["noct.near|nref.near&2657".to_string(), "nusdt.near|nusdc.near|ndai.near&1910".to_string()], total_reward: 2 }, "FarmingReward".to_string(), to_sec(e.current_time() + DAY_TS), DEFAULT_MIN_VOTING_DURATION_SEC, 1).assert_success();
 
     e.skip_time(DAY_SEC);
 
@@ -298,7 +305,7 @@ fn test_action_proposal_farming_reward_03(){
     
     e.extend_whitelisted_accounts(&e.owner, vec![users.bob.account_id()]).assert_success();
 
-    e.create_proposal(&users.bob, ProposalKind::FarmingReward { farm_list: vec!["noct.near|nref.near&2657".to_string(), "nusdt.near|nusdc.near|ndai.near&1910".to_string(), "usn.near|nusdt.near&3020".to_string()], total_reward: 3 }, "FarmingReward".to_string(), to_sec(e.current_time() + DAY_TS), 1000, 0).assert_success();
+    e.create_proposal(&users.bob, ProposalKind::FarmingReward { farm_list: vec!["noct.near|nref.near&2657".to_string(), "nusdt.near|nusdc.near|ndai.near&1910".to_string(), "usn.near|nusdt.near&3020".to_string()], total_reward: 3 }, "FarmingReward".to_string(), to_sec(e.current_time() + DAY_TS), DEFAULT_MIN_VOTING_DURATION_SEC, 1).assert_success();
 
     e.skip_time(DAY_SEC);
 
@@ -337,7 +344,7 @@ fn test_action_proposal_farming_reward_04(){
     
     e.extend_whitelisted_accounts(&e.owner, vec![users.bob.account_id()]).assert_success();
 
-    e.create_proposal(&users.bob, ProposalKind::FarmingReward { farm_list: vec!["noct.near|nref.near&2657".to_string(), "nusdt.near|nusdc.near|ndai.near&1910".to_string(), "usn.near|nusdt.near&3020".to_string()], total_reward: 3 }, "FarmingReward".to_string(), to_sec(e.current_time() + DAY_TS), 1000, 0).assert_success();
+    e.create_proposal(&users.bob, ProposalKind::FarmingReward { farm_list: vec!["noct.near|nref.near&2657".to_string(), "nusdt.near|nusdc.near|ndai.near&1910".to_string(), "usn.near|nusdt.near&3020".to_string()], total_reward: 3 }, "FarmingReward".to_string(), to_sec(e.current_time() + DAY_TS), DEFAULT_MIN_VOTING_DURATION_SEC, 1).assert_success();
 
     e.skip_time(DAY_SEC);
 
@@ -376,7 +383,7 @@ fn test_action_proposal_farming_reward_05(){
     
     e.extend_whitelisted_accounts(&e.owner, vec![users.bob.account_id()]).assert_success();
 
-    e.create_proposal(&users.bob, ProposalKind::FarmingReward { farm_list: vec!["noct.near|nref.near&2657".to_string(), "nusdt.near|nusdc.near|ndai.near&1910".to_string(), "usn.near|nusdt.near&3020".to_string()], total_reward: 10 }, "FarmingReward".to_string(), to_sec(e.current_time() + DAY_TS), 1000, 0).assert_success();
+    e.create_proposal(&users.bob, ProposalKind::FarmingReward { farm_list: vec!["noct.near|nref.near&2657".to_string(), "nusdt.near|nusdc.near|ndai.near&1910".to_string(), "usn.near|nusdt.near&3020".to_string()], total_reward: 10 }, "FarmingReward".to_string(), to_sec(e.current_time() + DAY_TS), DEFAULT_MIN_VOTING_DURATION_SEC, 1).assert_success();
 
     e.skip_time(DAY_SEC);
 
@@ -410,9 +417,9 @@ fn test_action_cancel(){
     
     e.extend_whitelisted_accounts(&e.owner, vec![users.bob.account_id()]).assert_success();
 
-    e.create_proposal(&users.bob, ProposalKind::FarmingReward { farm_list: vec!["noct.near|nref.near&2657".to_string(), "nusdt.near|nusdc.near|ndai.near&1910".to_string()], total_reward: 2 }, "FarmingReward".to_string(), to_sec(e.current_time() + DAY_TS), 1000, 0).assert_success();
-    e.create_proposal(&users.bob, ProposalKind::Poll { options: vec!["topic1".to_string(), "topic2".to_string()] }, "Poll".to_string(), to_sec(e.current_time() + DAY_TS), 1000, 0).assert_success();
-    e.create_proposal(&users.bob, ProposalKind::Common, "Common".to_string(), to_sec(e.current_time() + DAY_TS), DEFAULT_MIN_PROPOSAL_VOTING_PERIOD_SEC, to_yocto("1")).assert_success();
+    e.create_proposal(&users.bob, ProposalKind::FarmingReward { farm_list: vec!["noct.near|nref.near&2657".to_string(), "nusdt.near|nusdc.near|ndai.near&1910".to_string()], total_reward: 2 }, "FarmingReward".to_string(), to_sec(e.current_time() + DAY_TS), DEFAULT_MIN_VOTING_DURATION_SEC, 1).assert_success();
+    e.create_proposal(&users.bob, ProposalKind::Poll { options: vec!["topic1".to_string(), "topic2".to_string()] }, "Poll".to_string(), to_sec(e.current_time() + DAY_TS), DEFAULT_MIN_VOTING_DURATION_SEC, 1).assert_success();
+    e.create_proposal(&users.bob, ProposalKind::Common, "Common".to_string(), to_sec(e.current_time() + DAY_TS), DEFAULT_MIN_VOTING_DURATION_SEC, 1).assert_success();
 
     e.skip_time(DAY_SEC);
 
@@ -501,7 +508,7 @@ fn test_action_cancel(){
     })]), e.get_vote_detail(&users.alice));
 
     // 4 : E204_VOTE_CAN_NOT_CANCEL
-    e.skip_time(DEFAULT_MIN_PROPOSAL_VOTING_PERIOD_SEC);
+    e.skip_time(DEFAULT_MIN_VOTING_DURATION_SEC);
     assert_err!(e.action_cancel(&users.alice, 2), E204_VOTE_CAN_NOT_CANCEL);
     let alice = e.get_account_info(&users.alice).unwrap();
     assert_eq!(to_yocto("100"), alice.lpt_amount);

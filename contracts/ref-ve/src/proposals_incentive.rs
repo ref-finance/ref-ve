@@ -91,7 +91,7 @@ impl Contract {
                 
                 let total_reward = proposal.deposit_reward(incentive_key, token_id, amount);
                 let start_at = proposal.start_at;
-                self.data_mut().proposals.insert(&proposal_id, &proposal.into());
+                self.internal_set_proposal(proposal_id, proposal.into());
                 (total_reward, start_at)
             },
             _ => {

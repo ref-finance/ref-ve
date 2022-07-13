@@ -19,12 +19,15 @@ pub const E204_VOTE_CAN_NOT_CANCEL: &str = "E204: vote can not cancel";
 pub const E205_NOT_VOTABLE: &str = "E205: not votable";
 pub const E206_NO_VOTED: &str = "E206: no voted";
 pub const E207_INVALID_INCENTIVE_KEY: &str = "E207: invalid incentive key";
+pub const E208_DESCRIPTION_TOO_LONG: &str = "E208: description len need less than or equal to 2048";
 
 pub const E301_INVALID_RATIO: &str = "E301: invalid ratio";
 pub const E302_INVALID_DURATION: &str = "E302: invalid duration";
 pub const E303_INSUFFICIENT_VE_LPT: &str = "E303: Insufficient account ve lpt";
 pub const E304_CAUSE_PRE_UNLOCK: &str = "E304: would cause pre unlock";
 pub const E305_STILL_IN_LOCK: &str = "E305: still in locking";
+pub const E306_INVALID_LOCK_DURATION_LIMIT: &str = "E306: invalid lock duration limit";
+pub const E307_INVALID_VOTING_DURATION_LIMIT: &str = "E307: invalid voting duration limit";
 
 pub const E402_INVALID_START_TIME: &str = "E402: invalid start time";
 pub const E404_PROPOSAL_NOT_EXIST: &str = "E404: proposal not exist";
@@ -33,6 +36,7 @@ pub const E406_EXPIRED_PROPOSAL: &str = "E406: expired proposal";
 pub const E500_INVALID_MSG: &str = "E500: invalid msg";
 pub const E501_INVALID_FARM_INFO: &str = "E501: invalid farm info";
 pub const E502_INVALID_TOKEN_ID: &str = "E502: invalid token id";
+pub const E503_FIRST_LOCK_TOO_FEW: &str = "E503: first lock too few";
 
 pub const E600_MFT_INVALID_LPTOKEN_ID: &str = "E600: MFT lptoken id is invalid";
 pub const E601_MFT_INVALID_LPTOKEN_CONTRACT: &str = "E601: MFT lptoken contract id is invalid";

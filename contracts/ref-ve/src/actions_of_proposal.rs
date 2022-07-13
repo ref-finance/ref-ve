@@ -10,13 +10,18 @@ impl Contract {
         start_at: u32,
         duration_sec: u32,
     ) -> u32 {
+        assert_one_yocto();
+
         let proposer = env::predecessor_account_id();
         require!(self.data().whitelisted_accounts.contains(&proposer) , E002_NOT_ALLOWED);
+        require!(description.len() <= DESCRIPTION_LIMIT , E208_DESCRIPTION_TOO_LONG);
         
         self.internal_unwrap_account(&proposer);
 
         let config = self.internal_config();
 
+        require!(duration_sec >= config.min_voting_duration_sec && duration_sec <= config.max_voting_duration_sec
+            , E302_INVALID_DURATION);
         require!(start_at - nano_to_sec(env::block_timestamp()) >= config.min_proposal_start_vote_offset_sec, E402_INVALID_START_TIME);
 
         let votes: Vec<VoteInfo> = match &kind {
@@ -46,7 +51,7 @@ impl Contract {
             status: None,
             is_nonsense: None
         };
-        self.data_mut().proposals.insert(&id, &proposal.into());
+        self.internal_set_proposal(id, proposal.into());
 
         Event::ProposalCreate {
             proposer_id: &proposer,
@@ -96,7 +101,9 @@ impl Contract {
         }
     }
 
+    #[payable]
     pub fn action_proposal(&mut self, proposal_id: u32, action: Action, memo: Option<String>) -> U128 {
+        assert_one_yocto();
 
         let voter = env::predecessor_account_id();
 
