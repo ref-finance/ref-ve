@@ -1,4 +1,7 @@
 # Release Notes
 
+Version 0.2.1
+1. fix bug in internal_remove_account
+
 Version 0.2.0
 1. implement audit recommendation
