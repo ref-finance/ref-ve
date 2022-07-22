@@ -24,6 +24,9 @@ fn test_storage_impl() {
     assert_eq!(e.get_metadata().account_count.0, 2);
     assert_eq!(e.get_account_info(&users.bob).unwrap().sponsor_id, users.alice.account_id());
 
+    assert_eq!(e.storage_unregister(&users.bob, 1).unwrap_json::<bool>(), true);
+    e.storage_deposit(&users.alice, &users.bob, to_yocto("0.00125")).assert_success();
+    
     // alice unregister
     let user_balance_before = users.alice.account().unwrap().amount;
     assert_eq!(e.storage_unregister(&users.alice, 1).unwrap_json::<bool>(), true);

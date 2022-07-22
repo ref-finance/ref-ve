@@ -233,6 +233,7 @@ impl Contract {
     }
 
     pub fn internal_remove_account(&mut self, account_id: &AccountId) {
+        self.ft.accounts.remove(account_id);
         self.data_mut().accounts.remove(account_id);
         self.data_mut().account_count -= 1;
     }
