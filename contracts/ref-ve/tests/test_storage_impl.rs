@@ -57,6 +57,13 @@ fn test_storage_impl() {
     assert_err!(e.storage_unregister(&users.dude, 1), E104_STILL_HAS_LPT);
     assert_eq!(e.get_metadata().account_count.0, 1);
 
+    e.storage_deposit(&users.alice, &users.bob, to_yocto("0.00125")).assert_success();
+    e.transfer(&users.dude, &users.bob, to_ve_token("1"));
+    
+    assert_err!(e.storage_unregister(&users.bob, 1), E106_STILL_HAS_LOVE_TOKEN);
+    e.transfer(&users.bob, &users.dude, to_ve_token("1"));
+    assert_eq!(e.storage_unregister(&users.bob, 1).unwrap_json::<bool>(), true);
+
     // dude unregister
     e.skip_time(DEFAULT_MAX_LOCKING_DURATION_SEC);
     e.withdraw_lpt(&users.dude, None).assert_success();

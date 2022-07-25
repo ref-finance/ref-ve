@@ -10,6 +10,7 @@ pub const E102_INSUFFICIENT_STORAGE: &str = "E102: insufficient storage";
 pub const E103_STILL_HAS_REWARD: &str = "E103: still has reward";
 pub const E104_STILL_HAS_LPT: &str = "E104: still has lpt";
 pub const E105_ACC_NOT_LOCKED: &str = "E105: account not locked";
+pub const E106_STILL_HAS_LOVE_TOKEN: &str = "E106: still has love token";
 
 pub const E200_ALREADY_VOTED: &str = "E200: already voted";
 pub const E201_INVALID_VOTE: &str = "E201: invalid vote";
