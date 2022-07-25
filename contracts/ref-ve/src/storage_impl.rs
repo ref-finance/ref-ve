@@ -65,6 +65,11 @@ impl StorageManagement for Contract {
                 E104_STILL_HAS_LPT
             );
 
+            require!(
+                self.ft.accounts.get(&account_id).unwrap() == 0,
+                E106_STILL_HAS_LOVE_TOKEN
+            );
+
             self.internal_remove_account(&account_id);
             if account.sponsor_id != env::current_account_id(){
                 Promise::new(account.sponsor_id).transfer(STORAGE_BALANCE_MIN_BOUND);

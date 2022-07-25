@@ -1,6 +1,6 @@
 [package]
 name = "ref-ve"
-version = "0.2.1"
+version = "0.2.2"
 authors = ["Marco Sun <sun.dsk1@gmail.com>", "MagicGordon"]
 edition = "2018"
 publish = false
