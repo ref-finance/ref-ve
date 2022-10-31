@@ -109,6 +109,7 @@ impl Account {
             self.ve_lpt_amount += extra_x;
         } else {
             self.ve_lpt_amount = compute_ve_lpt_amount(config, self.lpt_amount + amount, duration_sec, lptoken_decimals);
+            require!(self.ve_lpt_amount > prev, E308_UNECONOMIC_LOCK);
         }
         self.unlock_timestamp = new_unlock_timestamp;
         self.lpt_amount += amount;

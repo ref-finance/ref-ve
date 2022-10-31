@@ -15,6 +15,6 @@ fn test_update(){
         e.ve_contract.contract.get_config()
     ).unwrap_json_value());
     e.upgrade_contract(&e.owner, ref_ve_wasm_bytes()).assert_success();
-    assert_eq!(e.get_metadata().version, "0.2.2".to_string());
+    assert_eq!(e.get_metadata().version, "0.2.3".to_string());
     println!("{:?}", e.get_config());
 }

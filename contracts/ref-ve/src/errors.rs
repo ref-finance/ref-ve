@@ -29,6 +29,7 @@ pub const E304_CAUSE_PRE_UNLOCK: &str = "E304: would cause pre unlock";
 pub const E305_STILL_IN_LOCK: &str = "E305: still in locking";
 pub const E306_INVALID_LOCK_DURATION_LIMIT: &str = "E306: invalid lock duration limit";
 pub const E307_INVALID_VOTING_DURATION_LIMIT: &str = "E307: invalid voting duration limit";
+pub const E308_UNECONOMIC_LOCK: &str = "E308: uneconomic lock";
 
 pub const E402_INVALID_START_TIME: &str = "E402: invalid start time";
 pub const E404_PROPOSAL_NOT_EXIST: &str = "E404: proposal not exist";
