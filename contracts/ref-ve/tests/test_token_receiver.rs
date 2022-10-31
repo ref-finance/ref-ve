@@ -45,6 +45,9 @@ fn test_lock_lpt(){
     before.cur_lock_lpt = to_yocto("300").into();
     assert_eq!(format!("{:?}", before), format!("{:?}", e.get_metadata()));
     assert_eq!(to_yocto("100"), e.mft_balance_of(&users.alice, &lpt_id()));
+
+    e.near.borrow_runtime_mut().cur_block.block_timestamp += DEFAULT_MAX_LOCKING_DURATION_SEC as u64 * 10u64.pow(9);
+    assert_err!(e.lock_lpt(&users.alice, to_yocto("1"), DEFAULT_MIN_LOCKING_DURATION_SEC), E308_UNECONOMIC_LOCK);
 }
 
 #[test]

@@ -2498,7 +2498,7 @@ dependencies = [
 
 [[package]]
 name = "ref-ve"
-version = "0.2.2"
+version = "0.2.3"
 dependencies = [
  "mock-ft",
  "mock-mft",
