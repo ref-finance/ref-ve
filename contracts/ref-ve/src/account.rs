@@ -30,6 +30,8 @@ pub struct Account {
     #[serde(skip_serializing)]
     pub proposals: HashMap<u32, VoteDetail>,
     /// Record expired proposal voting info
+    /// [Audit] Suggestion: proposal history can be queried from TheGraph if proposal events are emitted,
+    /// so not necessary to save in contract state which introduces extra storage cost
     #[serde(skip_serializing)]
     pub proposals_history: UnorderedMap<u32, VoteDetail>,
     #[serde(with = "u128_map_format")]
@@ -87,6 +89,7 @@ impl Account {
     pub fn sub_reward(&mut self, token_id: &AccountId, amount: Balance) {
         if let Some(prev) = self.rewards.remove(token_id) {
             require!(amount <= prev, E101_INSUFFICIENT_BALANCE);
+            // [Audit] Suggestion: better use `remaining` as a variable name
             let remain = prev - amount;
             if remain > 0 {
                 self.rewards.insert(token_id.clone(), remain);
